@@ -12,7 +12,7 @@ import {
 } from "@popicons/react";
 import { useState } from "react";
 
-export default function UserManagement() {
+export default function Index({ user_list }) {
     const { Search } = Input;
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const [selectedUser, setSelectedUser] = useState(null);
@@ -49,57 +49,8 @@ export default function UserManagement() {
         { title: "Beranda", href: "/dashboard" },
         { title: "User Management" },
     ];
+    console.log("User List:", user_list); 
 
-    // Data pengguna (contoh)
-    const dataSource = [
-        {
-            key: 1,
-            name: "Budi Santoso",
-            email: "budi.santoso@uns.ac.id",
-            role: "Super Admin",
-            department: "Humas UNS",
-            lastLogin: "20 Mar 2025, 09:45",
-            status: "Aktif",
-        },
-        {
-            key: 2,
-            name: "Andi Pratama",
-            email: "andi.pratama@uns.ac.id",
-            role: "Editor",
-            department: "Fakultas Ekonomi",
-            lastLogin: "19 Mar 2025, 15:30",
-            status: "Aktif",
-        },
-        {
-            key: 3,
-            name: "Dewi Anggraini",
-            email: "dewi.anggraini@uns.ac.id",
-            role: "Contributor",
-            department: "Fakultas MIPA",
-            lastLogin: "15 Mar 2025, 10:20",
-            status: "Tidak Aktif",
-        },
-        {
-            key: 4,
-            name: "Siti Nurhayati",
-            email: "siti.nurhayati@uns.ac.id",
-            role: "Editor",
-            department: "Fakultas Sastra",
-            lastLogin: "18 Mar 2025, 13:15",
-            status: "Aktif",
-        },
-        {
-            key: 5,
-            name: "Ahmad Rizky",
-            email: "ahmad.rizky@uns.ac.id",
-            role: "Contributor",
-            department: "Humas UNS",
-            lastLogin: "14 Mar 2025, 08:50",
-            status: "Aktif",
-        },
-    ];
-
-    // Definisi kolom tabel
     const columns = [
         {
             title: "Nama Lengkap",
@@ -134,12 +85,6 @@ export default function UserManagement() {
             title: "Unit/Fakultas",
             dataIndex: "department",
             key: "department",
-        },
-        {
-            title: "Login Terakhir",
-            dataIndex: "lastLogin",
-            key: "lastLogin",
-            sorter: (a, b) => new Date(a.lastLogin) - new Date(b.lastLogin),
         },
         {
             title: "Status",
@@ -261,7 +206,7 @@ export default function UserManagement() {
                     </div>
 
                     <DataTable
-                        data={dataSource}
+                        data={user_list}
                         columns={columns}
                         pagination={{ pageSize: 10 }}
                     />

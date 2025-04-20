@@ -5,6 +5,8 @@ namespace Database\Seeders;
 use App\Models\User;
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use App\Models\Agenda;
+use App\Models\Berita;
 
 class DatabaseSeeder extends Seeder
 {
@@ -15,9 +17,24 @@ class DatabaseSeeder extends Seeder
     {
         // User::factory(10)->create();
 
-        User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
+        User::firstOrCreate([
+            'name' => 'Superadmin',
+            'email' => 'superadmin@mail.com',
+            'password' => bcrypt('superadmin'),
+        ]);
+
+        User::firstOrCreate([
+            'name' => 'Admin',
+            'email' => 'admin@mail.com',
+            'password' => bcrypt('admin'),
+        ]);
+        User::firstOrCreate([
+            'name' => 'User',
+            'email' => 'user@mail.com',
+            'password' => bcrypt('user'),
+        ]);
+        $this->call([
+            RoleSeeder::class,
         ]);
     }
 }

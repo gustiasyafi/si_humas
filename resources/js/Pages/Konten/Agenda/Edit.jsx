@@ -1,10 +1,10 @@
 import DashboardLayout from "@/Layouts/DashboardLayout";
 import FormAgenda from "./Form";
 
-export default function Agenda() {
+export default function EditAgenda({ agenda = null }) {
     return (
         <DashboardLayout>
-            <FormAgenda type="create" />
+            <FormAgenda agenda={agenda} type="edit" />
         </DashboardLayout>
     );
 }

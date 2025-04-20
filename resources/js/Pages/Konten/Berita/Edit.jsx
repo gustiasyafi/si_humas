@@ -1,10 +1,10 @@
 import DashboardLayout from "@/Layouts/DashboardLayout";
 import FormBerita from "./Form";
 
-export default function CreateBerita({agendaList = []}) {
+export default function EditBerita({ agendaList=[],berita = null }) {
     return (
         <DashboardLayout>
-            <FormBerita agendaList={agendaList} type="create" />
+            <FormBerita agendaList={agendaList} berita={berita} type="edit" />
         </DashboardLayout>
     );
 }

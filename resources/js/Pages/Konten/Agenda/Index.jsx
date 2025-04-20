@@ -2,69 +2,75 @@ import DashboardLayout from "@/Layouts/DashboardLayout";
 import { Head, router } from "@inertiajs/react";
 import DataTable from "@/Components/DataTable";
 import Breadcrumbs from "@/Components/Breadcrumbs";
-import { Button, Space, Input, Tag, Dropdown } from "antd";
+import { Button, Space, Input, Tag, Dropdown, message, Modal } from "antd";
 import {
     PopiconsEditLine,
     PopiconsEyeLine,
     PopiconsPlusLine,
+    PopiconsEllipsisVerticalSolid,
+    PopiconsBadgeCheckLine,
+    PopiconsBinLine,
 } from "@popicons/react";
-import { PopiconsEllipsisVerticalSolid } from "@popicons/react";
+import { useEffect, useState } from "react";
+import Swal from "sweetalert2";
+import UbahStatusAgendaModal from "@/Components/UbahStatusAgendaModal";
 
-export default function Agenda() {
+export default function Agenda({ agenda_list, success_message }) {
+    useEffect(() => {
+        if (success_message) {
+            Swal.fire({
+                icon: "success",
+                title: success_message,
+                showConfirmButton: true,
+            });
+        }
+    }, [success_message]);
     const { Search } = Input;
-    const onSearch = (value, _e, info) => console.log(info?.source, value);
 
+    const onSearch = (value, _e, info) => console.log(info?.source, value);
+    const [statusOpen, setStatusOpen] = useState(false);
+    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+    const [selectedAgenda, setSelectedAgenda] = useState(null);
     const breadcrumbItems = [
         { title: "Beranda", href: "/dashboard" },
         { title: "Agenda" },
     ];
 
-    const handleView = (userId) => {
-        router.visit(`/agenda/detail/${userId}`);
-    };
-    const handleEdit = (userId) => {
-        router.visit(`/agenda/edit/${userId}`);
+    const handleView = (agendaId) => {
+        if (!agendaId) {
+            console.error("No agenda ID provided");
+            return;
+        }
+        router.visit(route("agenda.show", agendaId));
     };
 
-    const dataSource = [
-        {
-            key: 1,
-            name: "BNPT National Student Journalism Competition 2025",
-            date: "15 Mar 2025",
-            time: "08:00 WIB",
-            location: "Gedung Penunjang Operasional (GPO) TVRI, Jakarta",
-            category: "Mahasiswa UNS",
-            organizer: "BNPT",
-            pic: "Budi Santoso",
-            status: "Diajukan",
-            notes: "Belum ada catatan",
-        },
-        {
-            key: 2,
-            name: "Startup Collaboration Day",
-            date: "10 Mar 2025",
-            time: "10:00 WIB",
-            location: "The Sunan Hotel Solo, Surakarta",
-            category: "Kerja Sama UNS",
-            organizer: "Gojek / Tokopedia (GoTo)",
-            pic: "Andi Pratama",
-            status: "Diproses",
-            notes: "Belum ada catatan",
-        },
-        {
-            key: 3,
-            name: "Kampus Mengajar Bersama UNS & Mitra",
-            date: "28 Feb 2025",
-            time: "09:00 WIB",
-            location: "Auditorium Universitas Sebelas Maret",
-            category: "Kerja Sama UNS",
-            organizer: "Universitas Sebelas Maret (UNS)",
-            pic: "Dewi Anggraini",
-            status: "Dipublikasikan",
-            notes: "Belum ada catatan",
-        },
-    ];
+    const handleEdit = (agendaId) => {
+        router.visit(`/agenda/edit/${agendaId}`);
+    };
+
+    const showDeleteConfirm = (agenda) => {
+        setSelectedAgenda(agenda);
+        setIsDeleteModalOpen(true);
+    };
+
+    const handleDelete = () => {
+        router.delete(route('agenda.destroy', selectedAgenda.id), {
+            onSuccess: () => {
+                message.success("Berita berhasil dihapus");
+                setIsDeleteModalOpen(false);
+            },
+            onError: () => {
+                message.error("Gagal menghapus berita");
+            },
+        });
+    };
+
     const columns = [
+        {
+            title: "No",
+            key: "index",
+            render: (text, record, index) => index + 1, // Display serial number starting from 1
+        },
         { title: "Nama Agenda", dataIndex: "name", key: "name" },
         { title: "Tanggal", dataIndex: "date", key: "date" },
         { title: "Waktu", dataIndex: "time", key: "time" },
@@ -72,7 +78,11 @@ export default function Agenda() {
         { title: "Kategori", dataIndex: "category", key: "category" },
         { title: "Penyelenggara", dataIndex: "organizer", key: "organizer" },
         { title: "Penanggung Jawab", dataIndex: "pic", key: "pic" },
-        { title: "Status Agenda", dataIndex: "status", key: "status" },
+        {
+            title: "Status Agenda",
+            dataIndex: "status_agenda",
+            key: "status_agenda",
+        },
         { title: "Catatan", dataIndex: "notes", key: "notes" },
         {
             title: "Status",
@@ -82,28 +92,23 @@ export default function Agenda() {
                 <Tag
                     color={
                         status === "Dipublikasikan"
-                            ? "green"
+                            ? "gray"
                             : status === "Diajukan"
                               ? "orange"
-                              : status === "Dibatalkan"
-                                ? "gray"
+                              : status === "Perlu Revisi"
+                                ? "yellow"
                                 : status === "Diproses"
                                   ? "blue"
                                   : status === "Ditolak"
                                     ? "red"
                                     : status === "Diverifikasi oleh Humas UNS"
-                                      ? "purple"
+                                      ? "green"
                                       : "default"
                     }
                 >
                     {status}
                 </Tag>
             ),
-            // filters: [
-            //     { text: "Aktif", value: "Aktif" },
-            //     { text: "Tidak Aktif", value: "Tidak Aktif" },
-            // ],
-            onFilter: (value, record) => record.status === value,
         },
         {
             title: "Aksi",
@@ -114,16 +119,32 @@ export default function Agenda() {
                     menu={{
                         items: [
                             {
-                                key: "1",
+                                key: "detail",
                                 icon: <PopiconsEyeLine />,
                                 label: "Detail Agenda",
-                                onClick: () => handleView(record.key),
+                                onClick: () => handleView(record.id),
                             },
                             {
-                                key: "2",
+                                key: "edit",
                                 icon: <PopiconsEditLine />,
+                                label: "Edit Agenda",
+                                onClick: () => handleEdit(record.id),
+                            },
+                            {
+                                key: "status",
+                                icon: <PopiconsBadgeCheckLine />,
                                 label: "Ubah Status",
-                                onClick: () => handleEdit(record.key),
+                                onClick: () => {
+                                    setSelectedAgenda(record);
+                                    setStatusOpen(true);
+                                },
+                            },
+                            {
+                                key:"delete",
+                                icon: <PopiconsBinLine/>,
+                                label: "Hapus Agenda",
+                                danger: true,
+                                onClick: () => showDeleteConfirm(record),
                             },
                         ],
                     }}
@@ -142,7 +163,6 @@ export default function Agenda() {
     return (
         <DashboardLayout>
             <Head title="Agenda" />
-
             <div>
                 <div className="">
                     <div className="overflow-hidden bg-white shadow-sm sm:rounded-lg">
@@ -155,7 +175,7 @@ export default function Agenda() {
                         <div className="px-6 mb-4 mt-4">
                             <Space size="middle">
                                 <Button type="primary">Semua</Button>
-                                <Button type="primary">Diajukan</Button>
+                                {/* <Button type="primary">Diajukan</Button> */}
                             </Space>
                         </div>
                         <div className="px-6 mb-4 mt-4 flex justify-between items-center">
@@ -168,6 +188,15 @@ export default function Agenda() {
                                     onSearch={onSearch}
                                 />
                             </div>
+                            {/* <div className="px-4 mb-4 mt-4">
+                                <Button
+                                    size="large"
+                                    icon={<PopiconsFileDownloadLine />}
+                                    style={{ width: '100%' }}
+                                >
+                                    Eksport
+                                </Button>
+                            </div>  */}
                             <div>
                                 <Button
                                     type="primary"
@@ -182,11 +211,36 @@ export default function Agenda() {
                             </div>
                         </div>
                         <div className="px-6 mb-4">
-                            <DataTable data={dataSource} columns={columns} />
+                            <DataTable data={agenda_list} columns={columns} />
                         </div>
                     </div>
                 </div>
             </div>
+            {statusOpen && (
+                <UbahStatusAgendaModal
+                    data={selectedAgenda}
+                    visible={statusOpen}
+                    menu={'agenda'}
+                    onClose={() => setStatusOpen(false)}
+                />
+            )}
+            <Modal
+                title="Konfirmasi Hapus Agenda"
+                open={isDeleteModalOpen}
+                onOk={handleDelete}
+                onCancel={() => setIsDeleteModalOpen(false)}
+                okText="Hapus"
+                cancelText="Batal"
+                okButtonProps={{ danger: true }}
+            >
+                <p>
+                    Apakah Anda yakin ingin menghapus agenda{" "}
+                    <strong>{selectedAgenda?.name}</strong>?
+                </p>
+                <p className="text-gray-500 mt-2">
+                    Tindakan ini tidak dapat dibatalkan.
+                </p>
+            </Modal>
         </DashboardLayout>
     );
 }

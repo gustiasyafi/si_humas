@@ -149,7 +149,7 @@ export default function Navbar({ collapsed, setCollapsed }) {
                                 <Text className="font-semibold">
                                     {user.name}
                                 </Text>
-                                <Text>[Role]</Text>
+                                <Text>{user.roles[0].name}</Text>
                             </div>
                             <PopiconsChevronBottomDuotone className="size-5" />
                         </Button>

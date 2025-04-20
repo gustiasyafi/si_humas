@@ -2,22 +2,31 @@ import DashboardLayout from "@/Layouts/DashboardLayout";
 import { Head, router } from "@inertiajs/react";
 import DataTable from "@/Components/DataTable";
 import Breadcrumbs from "@/Components/Breadcrumbs";
-import { Button, Space, Input, Dropdown, Tag } from "antd";
+import { Button, Space, Input, Dropdown, Tag, message, Modal } from "antd";
 import {
+    PopiconsBadgeCheckLine,
     PopiconsEditLine,
     PopiconsEllipsisVerticalSolid,
     PopiconsEyeLine,
     PopiconsPlusLine,
+    PopiconsBinLine,
 } from "@popicons/react";
+import UbahStatusBeritaModal from "@/Components/UbahStatusBeritaModal";
+import { useState } from "react";
 
-export default function Agenda() {
+export default function Index ({ berita_list }) {
     const { Search } = Input;
+    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const onSearch = (value, _e, info) => console.log(info?.source, value);
+    
+    const [statusOpen, setStatusOpen] = useState(false);
+    const [selectedBerita, setSelectedBerita] = useState(null);
 
     const breadcrumbItems = [
         { title: "Beranda", href: "/dashboard" },
         { title: "Berita" },
     ];
+    
     const handleView = (userId) => {
         router.visit(`/berita/detail/${userId}`);
     };
@@ -25,41 +34,28 @@ export default function Agenda() {
         router.visit(`/berita/edit/${userId}`);
     };
 
-    const dataSource = [
-        {
-            key: 1,
-            judul: "BNPT National Student Journalism Competition 2025",
-            category: "Mahasiswa UNS",
-            organizer: "BNPT",
-            pic: "Budi Santoso",
-            status: "Diajukan",
-            notes: "Belum ada catatan",
-        },
-        {
-            key: 2,
-            judul: "Startup Collaboration Day",
-            category: "Kerja Sama UNS",
-            organizer: "Gojek / Tokopedia (GoTo)",
-            pic: "Andi Pratama",
-            status: "Diproses",
-            notes: "Belum ada catatan",
-        },
-        {
-            key: 3,
-            judul: "Kampus Mengajar Bersama UNS & Mitra",
-            category: "Kerja Sama UNS",
-            organizer: "Universitas Sebelas Maret (UNS)",
-            pic: "Dewi Anggraini",
-            status: "Dipublikasikan",
-            notes: "Belum ada catatan",
-        },
-    ];
+    const showDeleteConfirm = (berita) => {
+        setSelectedBerita(berita);
+        setIsDeleteModalOpen(true);
+    };
+
+    const handleDelete = () => {
+        router.delete(route('berita.destroy', selectedBerita.id), {
+            onSuccess: () => {
+                message.success("Berita berhasil dihapus");
+                setIsDeleteModalOpen(false);
+            },
+            onError: () => {
+                message.error("Gagal menghapus berita");
+            },
+        });
+    };
+
+    console.log("Berita List:", berita_list); 
     const columns = [
-        { title: "Judul Berita", dataIndex: "judul", key: "judul" },
+        { title: "Judul Berita", dataIndex: "title", key: "title" },
         { title: "Kategori", dataIndex: "category", key: "category" },
-        { title: "Penyelenggara", dataIndex: "organizer", key: "organizer" },
-        { title: "Penanggung Jawab", dataIndex: "pic", key: "pic" },
-        { title: "Status Agenda", dataIndex: "status", key: "status" },
+        { title: "Prioritas", dataIndex: "priority", key: "priority" },
         { title: "Catatan", dataIndex: "notes", key: "notes" },
         {
             title: "Status",
@@ -86,10 +82,6 @@ export default function Agenda() {
                     {status}
                 </Tag>
             ),
-            // filters: [
-            //     { text: "Aktif", value: "Aktif" },
-            //     { text: "Tidak Aktif", value: "Tidak Aktif" },
-            // ],
             onFilter: (value, record) => record.status === value,
         },
         {
@@ -101,16 +93,32 @@ export default function Agenda() {
                     menu={{
                         items: [
                             {
-                                key: "1",
+                                key: "detail",
                                 icon: <PopiconsEyeLine />,
                                 label: "Detail Berita",
-                                onClick: () => handleView(record.key),
+                                onClick: () => handleView(record.id),
                             },
                             {
-                                key: "2",
+                                key: "edit",
                                 icon: <PopiconsEditLine />,
+                                label: "Edit Data",
+                                onClick: () => handleEdit(record.id),
+                            },
+                            {
+                                key: "status",
+                                icon: <PopiconsBadgeCheckLine />,
                                 label: "Ubah Status",
-                                onClick: () => handleEdit(record.key),
+                                onClick: () => {
+                                    setSelectedBerita(record);
+                                    setStatusOpen(true);
+                                },
+                            },
+                            {
+                                key: "delete",
+                                icon: <PopiconsBinLine />,
+                                label: "Hapus Berita",
+                                danger: true,
+                                onClick: () => showDeleteConfirm(record),
                             },
                         ],
                     }}
@@ -128,7 +136,7 @@ export default function Agenda() {
 
     return (
         <DashboardLayout>
-            <Head title="Agenda" />
+            <Head title="Berita" />
 
             <div>
                 <div className="">
@@ -142,7 +150,7 @@ export default function Agenda() {
                         <div className="px-6 mb-4 mt-4">
                             <Space size="middle">
                                 <Button type="primary">Semua</Button>
-                                <Button type="primary">Diajukan</Button>
+                                {/* <Button type="primary">Diajukan</Button> */}
                             </Space>
                         </div>
                         <div className="px-6 mb-4 mt-4 flex justify-between items-center">
@@ -169,11 +177,36 @@ export default function Agenda() {
                             </div>
                         </div>
                         <div className="px-6 mb-4">
-                            <DataTable data={dataSource} columns={columns} />
+                            <DataTable data={berita_list} columns={columns} />
                         </div>
                     </div>
                 </div>
             </div>
+            {statusOpen && (
+                <UbahStatusBeritaModal
+                    data={selectedBerita}
+                    visible={statusOpen}
+                    menu={'berita'}
+                    onClose={() => setStatusOpen(false)}
+                />
+            )}
+            <Modal
+                title="Konfirmasi Hapus Berita"
+                open={isDeleteModalOpen}
+                onOk={handleDelete}
+                onCancel={() => setIsDeleteModalOpen(false)}
+                okText="Hapus"
+                cancelText="Batal"
+                okButtonProps={{ danger: true }}
+            >
+                <p>
+                    Apakah Anda yakin ingin menghapus berita{" "}
+                    <strong>{selectedBerita?.name}</strong>?
+                </p>
+                <p className="text-gray-500 mt-2">
+                    Tindakan ini tidak dapat dibatalkan.
+                </p>
+            </Modal>
         </DashboardLayout>
     );
 }
