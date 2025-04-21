@@ -73,5 +73,9 @@ Route::put('/berita/update-status/{berita}', [BeritaController::class, 'updateSt
 
 Route::get('/user-management', [UserController::class, 'index'])
     ->middleware(['auth', 'verified'])->name('user-management');
+Route::post('/user-management/store', [UserController::class, 'store'])
+    ->middleware(['auth', 'verified'])->name('user-management.store');
+Route::delete('/user-management/delete/{user}', [UserController::class, 'destroy'])
+    ->middleware(['auth', 'verified'])->name('user-management.destroy');
 
 require __DIR__ . '/auth.php';

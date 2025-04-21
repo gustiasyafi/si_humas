@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\Berita;
 use App\Models\Agenda;
 use Inertia\Inertia;
+use Illuminate\Support\Facades\Auth;
 // use App\Http\Controllers\Agenda;
 
 class BeritaController extends Controller
@@ -15,9 +16,15 @@ class BeritaController extends Controller
      */
     public function index()
     {
-        $beritas = Berita::orderBy('created_at', 'desc')->get(); // Fetch data from the database
+        /** @var \App\Models\User */
+        $user = Auth::user();
+        $query = Berita::query();
+        if ($user->hasRole('user')) {
+            $query->where('user_id', $user->id);
+        }
+        $beritas = $query->latest()->get();
         return Inertia::render('Konten/Berita/Index', [
-            'berita_list' => $beritas, // Pass the data to the Inertia response
+            'berita_list' => $beritas, 
         ]);
     }
 
@@ -51,6 +58,7 @@ class BeritaController extends Controller
         ]);
 
         Berita::create([
+            'user_id' => Auth::user()->id,
             'agenda_id' => $validated['agenda_id'] ?? null,
             'title' => $validated['title'],
             'description' => $validated['description'],
@@ -72,6 +80,11 @@ class BeritaController extends Controller
      */
     public function show(Berita $berita)
     {
+        /** @var \App\Models\User */
+        $user = Auth::user();
+        if ($user->hasRole('user') && Auth::user()->id !== $berita->user_id) {
+            return redirect()->route('berita')->with('error', 'Anda tidak memiliki akses ke berita ini.');
+        }
         $berita->load('agenda');
         // dd($berita->agenda);
         return Inertia::render('Konten/Berita/Show', [
@@ -84,6 +97,11 @@ class BeritaController extends Controller
      */
     public function edit(Berita $berita)
     {
+        /** @var \App\Models\User */
+        $user = Auth::user();
+        if ($user->hasRole('user') && Auth::user()->id !== $berita->user_id) {
+            return redirect()->route('berita')->with('error', 'Anda tidak memiliki akses ke berita ini.');
+        }
         $berita->load('agenda');
         $agendaList = Agenda::select('id', 'name')->get();
         return Inertia::render('Konten/Berita/Edit', [
@@ -97,6 +115,11 @@ class BeritaController extends Controller
      */
     public function update(Request $request, Berita $berita)
     {
+        /** @var \App\Models\User */
+        $user = Auth::user();
+        if ($user->hasRole('user') && Auth::user()->id !== $berita->user_id) {
+            return redirect()->route('berita')->with('error', 'Anda tidak memiliki akses ke berita ini.');
+        }
         $validated = $request->validate([
             'agenda_id' => 'nullable|exists:agendas,id',
             'title' => 'required|string|max:255',
@@ -116,15 +139,21 @@ class BeritaController extends Controller
     }
     public function updateStatus(Berita $berita, Request $request)
     {
-        if(!$berita) {
-            return redirect()->route('berita')->with ('error', 'Berita not found');
+        /** @var \App\Models\User */
+        $user = Auth::user();
+        if ($user->hasRole('user') && Auth::user()->id !== $berita->user_id) {
+            return redirect()->route('berita')->with('error', 'Anda tidak memiliki akses ke berita ini.');
+        }
+        if (!$berita) {
+            return redirect()->route('berita')->with('error', 'Berita not found');
         }
         $validated = $request->validate([
             'status' => 'required|string',
             'notes' => 'required|string'
         ]);
         $berita->update($validated);
-        return redirect()->route('berita')->with('message', 'Status updated successfully');    }
+        return redirect()->route('berita')->with('message', 'Status updated successfully');
+    }
 
     /**
      * Remove the specified resource from storage.
@@ -132,6 +161,11 @@ class BeritaController extends Controller
 
     public function destroy(Berita $berita)
     {
+        /** @var \App\Models\User */
+        $user = Auth::user();
+        if ($user->hasRole('user') && Auth::user()->id !== $berita->user_id) {
+            return redirect()->route('berita')->with('error', 'Anda tidak memiliki akses ke berita ini.');
+        }
         $berita->delete();
         return redirect()->route('berita')->with('success', 'Berita berhasil dihapus.');
     }

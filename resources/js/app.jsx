@@ -36,6 +36,9 @@ createInertiaApp({
                         colorPrimaryBg: "#4897FE",
                     },
                     components: {
+                        Button: {
+                            primaryShadow: "0",
+                        },
                         Menu: {
                             itemHeight: 45,
                             itemHoverColor: "#fff",

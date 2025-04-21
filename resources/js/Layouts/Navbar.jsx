@@ -92,10 +92,10 @@ export default function Navbar({ collapsed, setCollapsed }) {
                                     />
                                     <div className="ml-3">
                                         <div className="font-bold">
-                                            {user.name}
+                                            {user?.name}
                                         </div>
                                         <div className="text-gray-500">
-                                            {user.email}
+                                            {user?.email}
                                         </div>
                                     </div>
                                 </div>
@@ -147,9 +147,9 @@ export default function Navbar({ collapsed, setCollapsed }) {
                             />
                             <div className="flex flex-col items-start mr-2">
                                 <Text className="font-semibold">
-                                    {user.name}
+                                    {user?.name}
                                 </Text>
-                                <Text>{user.roles[0].name}</Text>
+                                <Text>{user?.role}</Text>
                             </div>
                             <PopiconsChevronBottomDuotone className="size-5" />
                         </Button>

@@ -36,7 +36,25 @@ class UserController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|unique:users,email',
+            'unit_kerja' => 'required|string|max:255',
+            'role' => 'required|string|max:255',
+            'password' => 'required|string|min:8',
+        ]);
+
+        $user = User::create([
+            'name' => $validated['name'],
+            'email' => $validated['email'],
+            'unit_kerja' => $validated['unit_kerja'],
+            'role' => $validated['role'],
+            'password' => bcrypt($validated['password']),
+        ]);
+
+        $user->syncRoles($validated['role']);
+
+        return redirect()->back()->with('success', 'User created successfully.');
     }
 
     /**
@@ -66,8 +84,9 @@ class UserController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $id)
+    public function destroy(User $user)
     {
-        //
+        $user->delete();
+        return redirect()->back()->with('success', 'Pengguna berhasil dihapus.');
     }
 }

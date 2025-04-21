@@ -9,10 +9,58 @@ import { useState, useEffect } from "react";
 
 const { Sider } = Layout;
 
+function filterMenuByRole(items, role) {
+    return items
+        .filter((item) => item.allowedRoles.includes(role))
+        .map((item) => {
+            const newItem = { ...item };
+            if (item.children) {
+                newItem.children = filterMenuByRole(item.children, role);
+            }
+            return newItem;
+        });
+}
+
 export default function Sidebar({ collapsed, setCollapsed }) {
-    const { url } = usePage();
+    const { url, props } = usePage();
+    const userRole = props.auth.user?.role;
     const [selectedKeys, setSelectedKeys] = useState([]);
     const [openKeys, setOpenKeys] = useState(["konten"]);
+
+    const allMenuItems = [
+        {
+            key: "beranda",
+            icon: <PopiconsHomeMinimalLine />,
+            label: <Link href="/dashboard">Beranda</Link>,
+            allowedRoles: ["superadmin", "admin", "user"],
+        },
+        {
+            key: "konten",
+            icon: <PopiconsFolderOpenLine />,
+            label: "Konten",
+            allowedRoles: ["superadmin", "admin", "user"],
+            children: [
+                {
+                    key: "agenda",
+                    label: <Link href="/agenda">Agenda</Link>,
+                    allowedRoles: ["superadmin", "admin", "user"],
+                },
+                {
+                    key: "berita",
+                    label: <Link href="/berita">Berita</Link>,
+                    allowedRoles: ["superadmin", "admin", "user"],
+                },
+            ],
+        },
+        {
+            key: "user-management",
+            icon: <PopiconsUsersLine />,
+            label: <Link href="/user-management">User Management</Link>,
+            allowedRoles: ["superadmin"],
+        },
+    ];
+
+    const filteredMenuItems = filterMenuByRole(allMenuItems, userRole);
 
     // Update selected keys based on current URL path
     useEffect(() => {
@@ -66,35 +114,7 @@ export default function Sidebar({ collapsed, setCollapsed }) {
                 openKeys={!collapsed ? openKeys : []}
                 onOpenChange={setOpenKeys}
                 // onClick={handleMenuClick}
-                items={[
-                    {
-                        key: "beranda",
-                        icon: <PopiconsHomeMinimalLine />,
-                        label: <Link href="/dashboard">Beranda</Link>,
-                    },
-                    {
-                        key: "konten",
-                        icon: <PopiconsFolderOpenLine />,
-                        label: "Konten",
-                        children: [
-                            {
-                                key: "agenda",
-                                label: <Link href="/agenda">Agenda</Link>,
-                            },
-                            {
-                                key: "berita",
-                                label: <Link href="/berita">Berita</Link>,
-                            },
-                        ],
-                    },
-                    {
-                        key: "user-management",
-                        icon: <PopiconsUsersLine />,
-                        label: (
-                            <Link href="/user-management">User Management</Link>
-                        ),
-                    },
-                ]}
+                items={filteredMenuItems}
             />
         </Sider>
     );

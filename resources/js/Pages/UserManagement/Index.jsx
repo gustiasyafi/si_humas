@@ -11,37 +11,54 @@ import {
     PopiconsEllipsisVerticalSolid,
 } from "@popicons/react";
 import { useState } from "react";
+import FormUserModal from "@/Components/FormUserModal";
 
 export default function Index({ user_list }) {
     const { Search } = Input;
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const [selectedUser, setSelectedUser] = useState(null);
+    const [selectedMenu, setSelectedMenu] = useState("user");
 
     const onSearch = (value) => {
         console.log("Searching for:", value);
         // Implementasi pencarian pengguna
     };
 
-    const handleEdit = (userId) => {
-        router.visit(`/user-management/edit/${userId}`);
+    const handleEdit = () => {
+        setSelectedMenu("edit");
+        setShowFormModal(true);
     };
 
     const showDeleteConfirm = (user) => {
         setSelectedUser(user);
         setIsDeleteModalOpen(true);
     };
+    const [showFormModal, setShowFormModal] = useState(false);
 
     const handleDelete = () => {
-        // Implementasi penghapusan pengguna
-        message.success(`Pengguna ${selectedUser.name} berhasil dihapus`);
+        router.delete(route("user-management.destroy", selectedUser.id), {
+            onSuccess: () => {
+                message.success("Pengguna berhasil dihapus");
+                setIsDeleteModalOpen(false);
+            },
+            onError: () => {
+                message.error("Gagal menghapus pengguna");
+            },
+        });
+        // setSelectedMenu("delete");
+        // setShowFormModal(true);
+        // // Implementasi penghapusan pengguna
+        // message.success(`Pengguna ${selectedUser.name} berhasil dihapus`);
         setIsDeleteModalOpen(false);
         // Refresh data atau update state
     };
 
-    const handleResetPassword = (userId) => {
+    const handleResetPassword = () => {
+        setSelectedMenu("reset");
+        setShowFormModal(true);
         // Implementasi reset password
-        console.log(userId);
-        message.success("Link reset password telah dikirim ke email pengguna");
+        // console.log(userId);
+        // message.success("Link reset password telah dikirim ke email pengguna");
     };
 
     // Data breadcrumb
@@ -49,7 +66,7 @@ export default function Index({ user_list }) {
         { title: "Beranda", href: "/dashboard" },
         { title: "User Management" },
     ];
-    console.log("User List:", user_list); 
+    console.log("User List:", user_list);
 
     const columns = [
         {
@@ -69,33 +86,60 @@ export default function Index({ user_list }) {
             key: "role",
             render: (role) => {
                 let color = "blue";
-                if (role === "Super Admin") color = "red";
-                if (role === "Contributor") color = "green";
+                if (role === "superadmin") color = "purple";
+                if (role === "admin") color = "yellow";
 
-                return <Tag color={color}>{role}</Tag>;
+                return (
+                    <Tag color={color}>
+                        {role
+                            .split(" ")
+                            .map(
+                                (word) =>
+                                    word.charAt(0).toUpperCase() +
+                                    word.slice(1),
+                            )
+                            .join(" ")}
+                    </Tag>
+                );
             },
             filters: [
-                { text: "Super Admin", value: "Super Admin" },
-                { text: "Editor", value: "Editor" },
-                { text: "Contributor", value: "Contributor" },
+                { text: "Superadmin", value: "superadmin" },
+                { text: "Admin", value: "admin" },
+                { text: "User", value: "user" },
             ],
             onFilter: (value, record) => record.role === value,
         },
         {
             title: "Unit/Fakultas",
-            dataIndex: "department",
-            key: "department",
+            dataIndex: "unit_kerja",
+            key: "unit_kerja",
         },
         {
             title: "Status",
             dataIndex: "status",
             key: "status",
             render: (status) => (
-                <Tag color={status === "Aktif" ? "green" : "red"}>{status}</Tag>
+                <Tag
+                    color={
+                        status === "aktif"
+                            ? "green"
+                            : status === "tidak aktif"
+                              ? "red"
+                              : "yellow"
+                    }
+                >
+                    {status
+                        .split(" ")
+                        .map(
+                            (word) =>
+                                word.charAt(0).toUpperCase() + word.slice(1),
+                        )
+                        .join(" ")}
+                </Tag>
             ),
             filters: [
-                { text: "Aktif", value: "Aktif" },
-                { text: "Tidak Aktif", value: "Tidak Aktif" },
+                { text: "Aktif", value: "aktif" },
+                { text: "Tidak Aktif", value: "tidak aktif" },
             ],
             onFilter: (value, record) => record.status === value,
         },
@@ -108,19 +152,19 @@ export default function Index({ user_list }) {
                     menu={{
                         items: [
                             {
-                                key: "1",
+                                key: "edit",
                                 icon: <PopiconsEditLine />,
                                 label: "Edit Pengguna",
-                                onClick: () => handleEdit(record.key),
+                                onClick: () => handleEdit(record),
                             },
                             {
-                                key: "2",
+                                key: "reset",
                                 icon: <PopiconsLockOpenKeyLine />,
                                 label: "Reset Password",
-                                onClick: () => handleResetPassword(record.key),
+                                onClick: () => handleResetPassword(record),
                             },
                             {
-                                key: "3",
+                                key: "delete",
                                 icon: <PopiconsBinLine />,
                                 label: "Hapus Pengguna",
                                 danger: true,
@@ -143,7 +187,6 @@ export default function Index({ user_list }) {
     return (
         <DashboardLayout>
             <Head title="User Management" />
-
             <div className="bg-white shadow-sm sm:rounded-lg">
                 <div className="px-6 mb-4 pt-4">
                     <Breadcrumbs items={breadcrumbItems} />
@@ -158,7 +201,10 @@ export default function Index({ user_list }) {
                         type="primary"
                         size="large"
                         icon={<PopiconsPlusLine />}
-                        onClick={() => router.visit("/user-management/tambah")}
+                        onClick={() => {
+                            setSelectedMenu("create");
+                            setShowFormModal(true);
+                        }}
                     >
                         Tambah Pengguna
                     </Button>
@@ -212,7 +258,6 @@ export default function Index({ user_list }) {
                     />
                 </div>
             </div>
-
             {/* Modal Konfirmasi Hapus */}
             <Modal
                 title="Konfirmasi Hapus Pengguna"
@@ -231,6 +276,16 @@ export default function Index({ user_list }) {
                     Tindakan ini tidak dapat dibatalkan.
                 </p>
             </Modal>
+            (
+            {showFormModal && (
+                <FormUserModal
+                    visible={showFormModal}
+                    onClose={() => setShowFormModal(false)}
+                    menu={selectedMenu}
+                    data={selectedUser}
+                />
+            )}
+            )
         </DashboardLayout>
     );
 }

@@ -13,6 +13,7 @@ return new class extends Migration
     {
         Schema::create('beritas', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('user_id')->nullable()->constrained('users');
             $table->foreignId('agenda_id')->nullable()->constrained('agendas');
             $table->string('title');
             $table->string('description');

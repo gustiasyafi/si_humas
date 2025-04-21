@@ -28,20 +28,20 @@ class RoleSeeder extends Seeder
         // Assign role ke user tertentu (misal user ID 1)
         $superadmin = User::where('email', 'superadmin@mail.com')->first();
         if ($superadmin) {
-            $superadmin->assignRole('superadmin');
+            $superadmin->syncRoles('superadmin');
         }
         $admin = User::where('email', 'admin@mail.com')->first();
         if ($admin) {
-            $admin->assignRole('admin');
+            $admin->syncRoles('admin');
         }
         $user = User::where('email', 'user@mail.com')->first();
         if ($user) {
-            $user->assignRole('user');
+            $user->syncRoles('user');
         }
 
         // Bisa juga assign role default ke semua user yang belum punya
         User::whereDoesntHave('roles')->get()->each(function ($user) {
-            $user->assignRole('user');
+            $user->syncRoles('user');
         });
     }
 }

@@ -22,8 +22,17 @@ class User extends Authenticatable
     protected $fillable = [
         'name',
         'email',
+        'unit_kerja',
         'password',
+        'status',
     ];
+
+    protected $appends = ['role'];
+
+    public function getRoleAttribute()
+    {
+        return $this->roles->pluck('name')->first();
+    }
 
     /**
      * The attributes that should be hidden for serialization.

@@ -11,6 +11,7 @@ class Berita extends Model
     // protected $primaryKey = 'berita_id';
     use HasFactory;
     protected $fillable =  [
+        'user_id',
         'agenda_id',
         'title',
         'description',

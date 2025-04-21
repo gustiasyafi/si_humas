@@ -2,7 +2,7 @@ import DashboardLayout from "@/Layouts/DashboardLayout";
 import { Head, router } from "@inertiajs/react";
 import DataTable from "@/Components/DataTable";
 import Breadcrumbs from "@/Components/Breadcrumbs";
-import { Button, Space, Input, Tag, Dropdown, message, Modal } from "antd";
+import { Button, Input, Tag, Dropdown, message, Modal } from "antd";
 import {
     PopiconsEditLine,
     PopiconsEyeLine,
@@ -10,12 +10,14 @@ import {
     PopiconsEllipsisVerticalSolid,
     PopiconsBadgeCheckLine,
     PopiconsBinLine,
+    PopiconsFileDownloadLine,
 } from "@popicons/react";
 import { useEffect, useState } from "react";
 import Swal from "sweetalert2";
 import UbahStatusAgendaModal from "@/Components/UbahStatusAgendaModal";
+import ExportAgendaModal from "@/Components/ExportAgendaModal";
 
-export default function Agenda({ agenda_list, success_message }) {
+export default function Agenda({ agenda_list, success_message, error_message }) {
     useEffect(() => {
         if (success_message) {
             Swal.fire({
@@ -24,7 +26,14 @@ export default function Agenda({ agenda_list, success_message }) {
                 showConfirmButton: true,
             });
         }
-    }, [success_message]);
+        if (error_message) {
+            Swal.fire({
+                icon: "error",
+                title: error_message,
+                showConfirmButton: true,
+            });
+        }
+    }, [success_message, error_message]);
     const { Search } = Input;
 
     const onSearch = (value, _e, info) => console.log(info?.source, value);
@@ -35,6 +44,7 @@ export default function Agenda({ agenda_list, success_message }) {
         { title: "Beranda", href: "/dashboard" },
         { title: "Agenda" },
     ];
+    const [showExportModal, setShowExportModal] = useState(false);
 
     const handleView = (agendaId) => {
         if (!agendaId) {
@@ -54,7 +64,7 @@ export default function Agenda({ agenda_list, success_message }) {
     };
 
     const handleDelete = () => {
-        router.delete(route('agenda.destroy', selectedAgenda.id), {
+        router.delete(route("agenda.destroy", selectedAgenda.id), {
             onSuccess: () => {
                 message.success("Berita berhasil dihapus");
                 setIsDeleteModalOpen(false);
@@ -71,8 +81,17 @@ export default function Agenda({ agenda_list, success_message }) {
             key: "index",
             render: (text, record, index) => index + 1, // Display serial number starting from 1
         },
-        { title: "Nama Agenda", dataIndex: "name", key: "name" },
-        { title: "Tanggal", dataIndex: "date", key: "date" },
+        { 
+            title: "Nama Agenda", 
+            dataIndex: "name", 
+            key: "name",
+            sorter: (a, b) => a.name.localeCompare(b.name),
+        },
+        { 
+            title: "Tanggal", 
+            dataIndex: "date", 
+            key: "date",
+        },
         { title: "Waktu", dataIndex: "time", key: "time" },
         { title: "Lokasi", dataIndex: "location", key: "location" },
         { title: "Kategori", dataIndex: "category", key: "category" },
@@ -83,7 +102,10 @@ export default function Agenda({ agenda_list, success_message }) {
             dataIndex: "status_agenda",
             key: "status_agenda",
         },
-        { title: "Catatan", dataIndex: "notes", key: "notes" },
+        { 
+            title: "Catatan",
+            dataIndex: "notes", 
+            key: "notes" },
         {
             title: "Status",
             dataIndex: "status",
@@ -95,20 +117,23 @@ export default function Agenda({ agenda_list, success_message }) {
                             ? "gray"
                             : status === "Diajukan"
                               ? "orange"
-                              : status === "Perlu Revisi"
-                                ? "yellow"
-                                : status === "Diproses"
-                                  ? "blue"
-                                  : status === "Ditolak"
-                                    ? "red"
-                                    : status === "Diverifikasi oleh Humas UNS"
-                                      ? "green"
-                                      : "default"
+                              : status === "Diproses"
+                                ? "blue"
+                                : status === "Ditolak"
+                                  ? "red"
+                                    : "default"
                     }
                 >
                     {status}
                 </Tag>
             ),
+            filters: [
+                { text: "Dipublikasikan", value: "Dipublikasikan" },
+                { text: "Diajukan", value: "Diajukan" },
+                { text: "Diproses", value: "Diproses" },
+                { text: "Ditolak", value: "Ditolak" },
+            ],
+            onFilter: (value, record) => record.status === value,
         },
         {
             title: "Aksi",
@@ -140,8 +165,8 @@ export default function Agenda({ agenda_list, success_message }) {
                                 },
                             },
                             {
-                                key:"delete",
-                                icon: <PopiconsBinLine/>,
+                                key: "delete",
+                                icon: <PopiconsBinLine />,
                                 label: "Hapus Agenda",
                                 danger: true,
                                 onClick: () => showDeleteConfirm(record),
@@ -172,12 +197,6 @@ export default function Agenda({ agenda_list, success_message }) {
                         <h1 className="px-6  text-gray-900 font-semibold text-2xl mt-4">
                             Manajemen Agenda
                         </h1>
-                        <div className="px-6 mb-4 mt-4">
-                            <Space size="middle">
-                                <Button type="primary">Semua</Button>
-                                {/* <Button type="primary">Diajukan</Button> */}
-                            </Space>
-                        </div>
                         <div className="px-6 mb-4 mt-4 flex justify-between items-center">
                             <div className="flex-1 mr-4">
                                 <Search
@@ -188,15 +207,15 @@ export default function Agenda({ agenda_list, success_message }) {
                                     onSearch={onSearch}
                                 />
                             </div>
-                            {/* <div className="px-4 mb-4 mt-4">
+                            <div className="px-4 mb-4 mt-4">
                                 <Button
                                     size="large"
                                     icon={<PopiconsFileDownloadLine />}
-                                    style={{ width: '100%' }}
+                                    onClick={() =>setShowExportModal(true)}
                                 >
-                                    Eksport
+                                    Ekspor
                                 </Button>
-                            </div>  */}
+                            </div> 
                             <div>
                                 <Button
                                     type="primary"
@@ -220,7 +239,7 @@ export default function Agenda({ agenda_list, success_message }) {
                 <UbahStatusAgendaModal
                     data={selectedAgenda}
                     visible={statusOpen}
-                    menu={'agenda'}
+                    menu={"agenda"}
                     onClose={() => setStatusOpen(false)}
                 />
             )}
@@ -241,6 +260,12 @@ export default function Agenda({ agenda_list, success_message }) {
                     Tindakan ini tidak dapat dibatalkan.
                 </p>
             </Modal>
+            <ExportAgendaModal
+                visible={showExportModal}
+                onClose={() => setShowExportModal(false)}
+                menu={"agenda"}
+                data={{}} // kosong karena ini untuk tambah, bukan edit
+            />
         </DashboardLayout>
     );
 }
