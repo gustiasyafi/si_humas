@@ -1,10 +1,10 @@
 import { useState, useEffect } from "react";
-import { Modal, Button, Form, notification, DatePicker, Divider, message } from "antd";
+import { Modal, Button, Form, notification, Divider, message, Select, Row, Col } from "antd";
 import { router } from "@inertiajs/react";
 import dayjs from "dayjs";
 import { useWatch } from "antd/es/form/Form";
 
-const ExportAgendaModal = ({ visible, onClose, menu }) => {
+const ExportBeritaModal = ({ visible, onClose, menu }) => {
     useEffect(() => {
         if (visible) {
             form.resetFields();
@@ -13,12 +13,9 @@ const ExportAgendaModal = ({ visible, onClose, menu }) => {
     const [form] = Form.useForm();
     const [loading, setLoading] = useState(false);
 
-    const onChange = (date, dateString) => {
-        console.log(date, dateString);
-    };
-
     const selectedFormat = useWatch("format", form);
 
+    const { Option } = Select;
     const handleSubmit = async (values) => {
         setLoading(true);
         try {
@@ -46,13 +43,12 @@ const ExportAgendaModal = ({ visible, onClose, menu }) => {
 
     const options = [
         { label: "Excel", value: "excel" },
-        { label: "PDF", value: "pdf" },
         { label: "CSV", value: "csv" },
     ];
 
     return (
         <Modal
-            title="Ekspor Agenda"
+            title="Ekspor Berita"
             visible={visible}
             onCancel={onClose}
             footer={[
@@ -73,7 +69,8 @@ const ExportAgendaModal = ({ visible, onClose, menu }) => {
                 layout="vertical"
                 form={form}
                 initialValues={{
-                    date: dayjs(),
+                    bulan: dayjs().month() + 1,
+                    tahun: dayjs().year(),
                 }}
                 onFinish={handleSubmit}
             >
@@ -107,24 +104,60 @@ const ExportAgendaModal = ({ visible, onClose, menu }) => {
                         ))}
                     </div>
                 </Form.Item>
-
                 <Form.Item
-                    name="date"
-                    label="Tanggal Agenda"
+                    name="unit_kerja"
+                    label="Unit Kerja"
                     rules={[{ required: true }]}
-                >
-                    <DatePicker
-                        onChange={onChange}
-                        style={{ width: "100%" }}
-                        format="DD/MM/YYYY"
-                        placeholder="Pilih tanggal"
-                        size="large"
-                        defaultValue={dayjs(new Date())}
-                    />
+                    >
+                        <Select placeholder="Pilih Unit Kerja" size="large">
+                            <Option value="Fakultas">Fakultas</Option>
+                            <Option value="UPT">UPT</Option>
+                            <Option value="PUSDI">PUSDI</Option>
+                        </Select>
                 </Form.Item>
+                
+                <Row gutter={16}>
+                    <Col span={12}>
+                        <Form.Item
+                            name="bulan"
+                            label="Bulan"
+                            rules={[{ required: true, message: "Pilih bulan terlebih dahulu" }]}
+                        >
+                            <Select placeholder="Pilih Bulan" size="large">
+                                {[
+                                    "Januari", "Februari", "Maret", "April", "Mei", "Juni",
+                                    "Juli", "Agustus", "September", "Oktober", "November", "Desember"
+                                ].map((month, index) => (
+                                    <Option key={index + 1} value={index + 1}>
+                                        {month}
+                                    </Option>
+                                ))}
+                            </Select>
+                        </Form.Item>
+                    </Col>
+                    <Col span={12}>
+                        <Form.Item
+                            name="tahun"
+                            label="Tahun"
+                            rules={[{ required: true, message: "Pilih tahun terlebih dahulu" }]}
+                        >
+                            <Select placeholder="Pilih Tahun" size="large">
+                                {Array.from({ length: 10 }, (_, i) => {
+                                    const year = new Date().getFullYear() - i;
+                                    return (
+                                        <Option key={year} value={year}>
+                                            {year}
+                                        </Option>
+                                    );
+                                })}
+                            </Select>
+                        </Form.Item>
+                    </Col>
+                </Row>
+                
             </Form>
         </Modal>
     );
 };
 
-export default ExportAgendaModal;
+export default ExportBeritaModal;

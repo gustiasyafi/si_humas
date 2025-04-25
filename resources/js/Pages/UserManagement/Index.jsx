@@ -91,13 +91,9 @@ export default function Index({ user_list }) {
 
                 return (
                     <Tag color={color}>
-                        {role
+                        {(role ?? "")
                             .split(" ")
-                            .map(
-                                (word) =>
-                                    word.charAt(0).toUpperCase() +
-                                    word.slice(1),
-                            )
+                            .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
                             .join(" ")}
                     </Tag>
                 );
@@ -128,12 +124,9 @@ export default function Index({ user_list }) {
                               : "yellow"
                     }
                 >
-                    {status
+                     {(status ?? "")
                         .split(" ")
-                        .map(
-                            (word) =>
-                                word.charAt(0).toUpperCase() + word.slice(1),
-                        )
+                        .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
                         .join(" ")}
                 </Tag>
             ),
@@ -276,7 +269,6 @@ export default function Index({ user_list }) {
                     Tindakan ini tidak dapat dibatalkan.
                 </p>
             </Modal>
-            (
             {showFormModal && (
                 <FormUserModal
                     visible={showFormModal}
@@ -285,7 +277,6 @@ export default function Index({ user_list }) {
                     data={selectedUser}
                 />
             )}
-            )
         </DashboardLayout>
     );
 }

@@ -130,7 +130,7 @@ class AgendaController extends Controller
         // Validasi status
         $validated = $request->validate([
             'status' => 'required|string',
-            'notes' => 'required|string',
+            'notes' => 'nullable|string',
         ]);
 
         // Update status

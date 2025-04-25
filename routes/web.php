@@ -59,7 +59,7 @@ Route::get('/berita/detail/{berita}', [BeritaController::class, 'show'])
     ->middleware(['auth', 'verified'])->name('berita.show');
 Route::get('/berita/edit/{berita}', [BeritaController::class, 'edit'])
     ->middleware(['auth', 'verified'])->name('berita.edit');
-    Route::put('/berita/update/{berita}', [BeritaController::class, 'update'])
+Route::put('/berita/update/{berita}', [BeritaController::class, 'update'])
     ->middleware(['auth', 'verified'])->name('berita.update');
 
 Route::post('/berita/store', [BeritaController::class, 'store'])

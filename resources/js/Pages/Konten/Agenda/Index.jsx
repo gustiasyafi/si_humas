@@ -13,30 +13,24 @@ import {
     PopiconsFileDownloadLine,
 } from "@popicons/react";
 import { useEffect, useState } from "react";
-import Swal from "sweetalert2";
 import UbahStatusAgendaModal from "@/Components/UbahStatusAgendaModal";
 import ExportAgendaModal from "@/Components/ExportAgendaModal";
 
 export default function Agenda({ agenda_list, success_message, error_message }) {
     useEffect(() => {
         if (success_message) {
-            Swal.fire({
-                icon: "success",
-                title: success_message,
-                showConfirmButton: true,
-            });
+            message.success(success_message);
         }
         if (error_message) {
-            Swal.fire({
-                icon: "error",
-                title: error_message,
-                showConfirmButton: true,
-            });
+            message.error(error_message);
         }
     }, [success_message, error_message]);
     const { Search } = Input;
 
-    const onSearch = (value, _e, info) => console.log(info?.source, value);
+    const [searchTerm, setSearchTerm] = useState("");
+    const onSearch = (value) => {
+        setSearchTerm(value.toLowerCase());
+    };
     const [statusOpen, setStatusOpen] = useState(false);
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const [selectedAgenda, setSelectedAgenda] = useState(null);
@@ -114,7 +108,7 @@ export default function Agenda({ agenda_list, success_message, error_message }) 
                 <Tag
                     color={
                         status === "Dipublikasikan"
-                            ? "gray"
+                            ? "green"
                             : status === "Diajukan"
                               ? "orange"
                               : status === "Diproses"
@@ -205,6 +199,9 @@ export default function Agenda({ agenda_list, success_message, error_message }) 
                                     style={{ width: 250 }}
                                     size="large"
                                     onSearch={onSearch}
+                                    onChange={(e) =>
+                                        setSearchTerm(e.target.value.toLowerCase())
+                                    }
                                 />
                             </div>
                             <div className="px-4 mb-4 mt-4">
@@ -230,7 +227,11 @@ export default function Agenda({ agenda_list, success_message, error_message }) 
                             </div>
                         </div>
                         <div className="px-6 mb-4">
-                            <DataTable data={agenda_list} columns={columns} />
+                            <DataTable 
+                                data={agenda_list.filter((item)=>
+                                    item.name.toLowerCase().includes(searchTerm) 
+                                )} 
+                                columns={columns} />
                         </div>
                     </div>
                 </div>

@@ -10,9 +10,9 @@ import {
     TimePicker,
     Divider,
     Select,
+    message
 } from "antd";
 import { PopiconsPlusLine } from "@popicons/react";
-import Swal from "sweetalert2";
 import { router } from "@inertiajs/react";
 import dayjs from "dayjs";
 
@@ -100,6 +100,11 @@ export default function FormAgenda({ agenda = null, type = "create" }) {
         },
     ];
 
+    const onClose = () => {
+        // misalnya balik ke halaman list agenda
+        router.visit("/agenda");
+    };
+
     const onFinish = async (values) => {
         try {
             const publishValue = values.publish.join(", ");
@@ -120,48 +125,28 @@ export default function FormAgenda({ agenda = null, type = "create" }) {
             if (type === "edit" && agenda?.id) {
                 router.put(route("agenda.update", agenda.id), formData, {
                     onSuccess: () => {
-                        Swal.fire({
-                            icon: "success",
-                            title: "Berhasil!",
-                            text: "Agenda berhasil diperbarui!",
-                        });
+                        onClose();
+                        message.success("Agenda berhasil diperbarui!");
                     },
                     onError: (errors) => {
-                        Swal.fire({
-                            icon: "error",
-                            title: "Gagal menyimpan",
-                            text: "Cek kembali input kamu.",
-                        });
+                        message.error("Gagal menyimpan. Cek kembali input kamu.");
                         console.log(errors);
                     },
                 });
             } else {
                 router.post(route("agenda.store"), formData, {
                     onSuccess: () => {
-                        Swal.fire({
-                            icon: "success",
-                            title: "Berhasil!",
-                            text: "Agenda berhasil disimpan!",
-                        });
                         form.resetFields();
+                        message.success("Agenda berhasil disimpan!");
                     },
                     onError: (errors) => {
-                        Swal.fire({
-                            icon: "error",
-                            title: "Gagal menyimpan",
-                            text: "Cek kembali input kamu.",
-                        });
+                        message.error("Gagal menyimpan agenda. Cek kembali input kamu.");
                         console.log(errors);
                     },
                 });
             }
-        } catch (error) {
-            Swal.fire({
-                icon: "error",
-                title: "Terjadi Kesalahan!",
-                text: "Silakan coba lagi.",
-            });
-            console.error("Error onFinish:", error);
+        } catch {
+            message.error("Terjadi kesalahan. Silakan coba lagi.");
         }
     };
     

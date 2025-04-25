@@ -2,7 +2,7 @@ import DashboardLayout from "@/Layouts/DashboardLayout";
 import { Head, router } from "@inertiajs/react";
 import DataTable from "@/Components/DataTable";
 import Breadcrumbs from "@/Components/Breadcrumbs";
-import { Button, Space, Input, Dropdown, Tag, message, Modal } from "antd";
+import { Button, Input, Dropdown, Tag, message, Modal } from "antd";
 import {
     PopiconsBadgeCheckLine,
     PopiconsEditLine,
@@ -10,17 +10,23 @@ import {
     PopiconsEyeLine,
     PopiconsPlusLine,
     PopiconsBinLine,
+    PopiconsFileDownloadLine
 } from "@popicons/react";
 import UbahStatusBeritaModal from "@/Components/UbahStatusBeritaModal";
 import { useState } from "react";
+import ExportBeritaModal from "@/Components/ExportBeritaModal";
 
 export default function Index ({ berita_list }) {
     const { Search } = Input;
+    const [searchTerm, setSearchTerm] = useState("");
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-    const onSearch = (value, _e, info) => console.log(info?.source, value);
+    const onSearch = (value) => {
+        setSearchTerm(value.toLowerCase());
+    };
     
     const [statusOpen, setStatusOpen] = useState(false);
     const [selectedBerita, setSelectedBerita] = useState(null);
+    const [showExportModal, setShowExportModal] = useState(false);
 
     const breadcrumbItems = [
         { title: "Beranda", href: "/dashboard" },
@@ -147,12 +153,6 @@ export default function Index ({ berita_list }) {
                         <h1 className="px-6  text-gray-900 font-semibold text-2xl mt-4">
                             Manajemen Berita
                         </h1>
-                        <div className="px-6 mb-4 mt-4">
-                            <Space size="middle">
-                                <Button type="primary">Semua</Button>
-                                {/* <Button type="primary">Diajukan</Button> */}
-                            </Space>
-                        </div>
                         <div className="px-6 mb-4 mt-4 flex justify-between items-center">
                             <div className="flex-1 mr-4">
                                 <Search
@@ -161,8 +161,18 @@ export default function Index ({ berita_list }) {
                                     style={{ width: 250 }}
                                     size="large"
                                     onSearch={onSearch}
+                                    onChange={(e) =>setSearchTerm(e.target.value.toLowerCase())}
                                 />
                             </div>
+                            <div className="px-4 mb-4 mt-4">
+                                <Button
+                                    size="large"
+                                    icon={<PopiconsFileDownloadLine />}
+                                    onClick={() =>setShowExportModal(true)}
+                                >
+                                    Ekspor
+                                </Button>
+                            </div> 
                             <div>
                                 <Button
                                     type="primary"
@@ -177,7 +187,12 @@ export default function Index ({ berita_list }) {
                             </div>
                         </div>
                         <div className="px-6 mb-4">
-                            <DataTable data={berita_list} columns={columns} />
+                        <DataTable
+                            data={berita_list.filter((item) =>
+                                item.title.toLowerCase().includes(searchTerm)
+                            )}
+                            columns={columns}
+                        />
                         </div>
                     </div>
                 </div>
@@ -207,6 +222,12 @@ export default function Index ({ berita_list }) {
                     Tindakan ini tidak dapat dibatalkan.
                 </p>
             </Modal>
+            <ExportBeritaModal
+                visible={showExportModal}
+                onClose={() => setShowExportModal(false)}
+                menu={"berita"}
+                data={{  }}
+                />
         </DashboardLayout>
     );
 }

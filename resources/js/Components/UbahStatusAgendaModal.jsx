@@ -1,7 +1,7 @@
 import { useState } from "react";
-import { Modal, Button, Select, Form, notification, Input } from "antd";
+import { Modal, Button, Select, Form, message, Input } from "antd";
 import { router } from "@inertiajs/react";
-import Swal from "sweetalert2";
+// import Swal from "sweetalert2";
 
 const { Option } = Select;
 const { TextArea } = Input;
@@ -22,28 +22,17 @@ const UbahStatusAgendaModal = ({ visible, onClose, menu, data }) => {
                     {
                         onSuccess: () => {
                             onClose();
-                            Swal.fire({
-                                icon: "success",
-                                title: "Berhasil!",
-                                text: "Status Agenda berhasil diperbarui!",
-                            });
+                            message.success("Status berhasil diperbarui!");
                         },
                         onError: (errors) => {
-                            Swal.fire({
-                                icon: "error",
-                                title: "Gagal menyimpan",
-                                text: "Cek kembali input kamu.",
-                            });
+                            message.error("Gagal menyimpan. Cek kembali input kamu.");
                             console.log(errors);
                         },
                     },
                 );
             }
         } catch (error) {
-            notification.error({
-                message: "Gagal mengubah status",
-                description: error.response?.data?.message || error.message,
-            });
+            message.error(error.response?.data?.message || error.message);
         } finally {
             setLoading(false);
         }
@@ -75,8 +64,9 @@ const UbahStatusAgendaModal = ({ visible, onClose, menu, data }) => {
                     initialValue={data.status}
                 >
                     <Select placeholder="Pilih status baru" size="large">
-                        <Option value="Diajukan">Diajukan</Option>
-                        <Option value="Disetujui">Dipublikasikan</Option>
+                        <Option value="Diproses">Diproses</Option>
+                        <Option value="Dipublikasikan">Dipublikasikan</Option>
+                        <Option value="Ditolak">Ditolak</Option>
                     </Select>
                 </Form.Item>
                 <Form.Item name={"notes"}>
