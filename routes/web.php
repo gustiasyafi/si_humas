@@ -45,7 +45,7 @@ Route::put('/agenda/cancel/{agenda}', [AgendaController::class, 'cancel'])
 Route::get('/agenda/edit/{agenda}', [AgendaController::class, 'edit'])
     ->middleware(['auth', 'verified'])->name('agenda.edit');
 Route::put('/agenda/update/{agenda}', [AgendaController::class, 'update'])
-    ->middleware(['auth', 'verified'])->name('sagenda.update');
+    ->middleware(['auth', 'verified'])->name('agenda.update');
 Route::delete('/agenda/delete/{agenda}', [AgendaController::class, 'destroy'])
     ->middleware(['auth', 'verified'])->name('agenda.destroy');
 Route::put('agenda/update-status/{agenda}', [AgendaController::class, 'updateStatus'])
@@ -75,7 +75,13 @@ Route::get('/user-management', [UserController::class, 'index'])
     ->middleware(['auth', 'verified'])->name('user-management');
 Route::post('/user-management/store', [UserController::class, 'store'])
     ->middleware(['auth', 'verified'])->name('user-management.store');
+Route::get('/user-management/edit/{user}', [UserController::class, 'edit'])
+    ->middleware(['auth', 'verified'])->name('user-management.edit');
+Route::put('/user-management/update/{user}', [UserController::class, 'update'])
+    ->middleware(['auth', 'verified'])->name('user-management.update');
 Route::delete('/user-management/delete/{user}', [UserController::class, 'destroy'])
     ->middleware(['auth', 'verified'])->name('user-management.destroy');
+Route::put('/user-management/reset-password/{user}', [UserController::class, 'resetPassword'])
+    ->middleware(['auth', 'verified'])->name('user-management.reset-password');
 
 require __DIR__ . '/auth.php';

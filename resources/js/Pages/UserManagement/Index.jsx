@@ -12,28 +12,31 @@ import {
 } from "@popicons/react";
 import { useState } from "react";
 import FormUserModal from "@/Components/FormUserModal";
+// import ResetPasswordModal from "@/Components/ResetPasswordModal";
 
 export default function Index({ user_list }) {
     const { Search } = Input;
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const [selectedUser, setSelectedUser] = useState(null);
     const [selectedMenu, setSelectedMenu] = useState("user");
+    const [showFormModal, setShowFormModal] = useState(false);
 
     const onSearch = (value) => {
         console.log("Searching for:", value);
         // Implementasi pencarian pengguna
     };
 
-    const handleEdit = () => {
+    const handleEdit = (user) => {
+        setSelectedUser(user);
         setSelectedMenu("edit");
         setShowFormModal(true);
+
     };
 
     const showDeleteConfirm = (user) => {
         setSelectedUser(user);
         setIsDeleteModalOpen(true);
     };
-    const [showFormModal, setShowFormModal] = useState(false);
 
     const handleDelete = () => {
         router.delete(route("user-management.destroy", selectedUser.id), {
@@ -45,16 +48,12 @@ export default function Index({ user_list }) {
                 message.error("Gagal menghapus pengguna");
             },
         });
-        // setSelectedMenu("delete");
-        // setShowFormModal(true);
-        // // Implementasi penghapusan pengguna
-        // message.success(`Pengguna ${selectedUser.name} berhasil dihapus`);
         setIsDeleteModalOpen(false);
-        // Refresh data atau update state
     };
 
-    const handleResetPassword = () => {
-        setSelectedMenu("reset");
+    const handleResetPassword = (user) => {
+        setSelectedUser(user);
+        setSelectedMenu("reset-password");
         setShowFormModal(true);
         // Implementasi reset password
         // console.log(userId);
@@ -269,14 +268,15 @@ export default function Index({ user_list }) {
                     Tindakan ini tidak dapat dibatalkan.
                 </p>
             </Modal>
-            {showFormModal && (
+            {showFormModal && (selectedMenu === "create" || selectedMenu === "edit" || selectedMenu === "reset-password") && (
                 <FormUserModal
                     visible={showFormModal}
                     onClose={() => setShowFormModal(false)}
                     menu={selectedMenu}
-                    data={selectedUser}
+                    data={selectedUser} // ← kirim data user ke FormUserModal
                 />
-            )}
+            )}           
+            
         </DashboardLayout>
     );
 }
