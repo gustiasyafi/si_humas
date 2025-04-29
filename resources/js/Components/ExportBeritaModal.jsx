@@ -1,35 +1,103 @@
-import { useState, useEffect } from "react";
-import { Modal, Button, Form, notification, Divider, message, Select, Row, Col } from "antd";
+import { useState, useEffect, useRef } from "react";
+import { Modal, Button, Form, notification, Divider, message, Select, Row, Col, Spin } from "antd";
 import { router } from "@inertiajs/react";
 import dayjs from "dayjs";
 import { useWatch } from "antd/es/form/Form";
 
 const ExportBeritaModal = ({ visible, onClose, menu }) => {
+    const canvasRef = useRef(null);
+    const [form] = Form.useForm();
+    const [loading, setLoading] = useState(false);
+    const [generatedImage, setGeneratedImage] = useState(null);
+    const [imageLoading, setImageLoading] = useState(false);
+
+    const selectedFormat = useWatch("format", form);
+    const unitKerja = useWatch("unit_kerja", form);
+    const bulan = useWatch("bulan", form);
+    const tahun = useWatch("tahun", form);
+
     useEffect(() => {
         if (visible) {
             form.resetFields();
+            setGeneratedImage(null);
         }
-    }, [visible]);
-    const [form] = Form.useForm();
-    const [loading, setLoading] = useState(false);
-
-    const selectedFormat = useWatch("format", form);
+    }, [form, visible]);
 
     const { Option } = Select;
+
+    // Fungsi untuk generate gambar menggunakan Canvas API
+    const generateImage = () => {
+        setImageLoading(true);
+        
+        // Mengambil nilai dari form
+        const values = form.getFieldsValue();
+        const unitKerja = values.unit_kerja || "Tidak dipilih";
+        const bulan = values.bulan ? 
+            ["Januari", "Februari", "Maret", "April", "Mei", "Juni", 
+             "Juli", "Agustus", "September", "Oktober", "November", "Desember"][values.bulan - 1] 
+            : "Tidak dipilih";
+        const tahun = values.tahun || "Tidak dipilih";
+        
+        // Buat canvas
+        const canvas = document.createElement("canvas");
+        canvas.width = 800;
+        canvas.height = 500;
+        const ctx = canvas.getContext("2d");
+        
+        // Gambar background putih
+        ctx.fillStyle = "#FFFFFF";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        
+        // Gambar border
+        ctx.strokeStyle = "#7cb305";
+        ctx.lineWidth = 10;
+        ctx.strokeRect(10, 10, canvas.width - 20, canvas.height - 20);
+        
+        // Tambahkan teks header
+        ctx.fillStyle = "#000000";
+        ctx.font = "bold 36px Arial";
+        ctx.textAlign = "center";
+        ctx.fillText("LAPORAN BERITA", canvas.width / 2, 80);
+        
+        // Tambahkan data dari form
+        ctx.font = "bold 28px Arial";
+        ctx.fillText("Unit Kerja: " + unitKerja, canvas.width / 2, 180);
+        
+        ctx.font = "24px Arial";
+        ctx.fillText("Bulan: " + bulan, canvas.width / 2, 240);
+        ctx.fillText("Tahun: " + tahun, canvas.width / 2, 290);
+        
+        // Tambahkan footer
+        ctx.font = "italic 18px Arial";
+        ctx.fillText("Dokumen dibuat pada: " + new Date().toLocaleString(), canvas.width / 2, 450);
+        
+        // Konversi canvas ke gambar
+        const imageUrl = canvas.toDataURL("image/png");
+        setGeneratedImage(imageUrl);
+        setImageLoading(false);
+    };
+
     const handleSubmit = async (values) => {
         setLoading(true);
         try {
-            if (menu === "user") {
-                await router.post(values, {
-                    onSuccess: () => {
-                        onClose();
-                        message.success("Ekspor berhasil diunduh");
-                    },
-                    onError: (errors) => {
-                        message.error("Gagal mengunduh. Cek kembali input kamu.");
-                        console.log(errors);
-                    },
-                });
+            if (values.format === "png") {
+                // Generate image client-side
+                generateImage();
+                message.success("Berhasil generate gambar");
+            } else {
+                // Handle PDF format (server-side)
+                if (menu === "user") {
+                    await router.post(values, {
+                        onSuccess: () => {
+                            onClose();
+                            message.success("Ekspor berhasil diunduh");
+                        },
+                        onError: (errors) => {
+                            message.error("Gagal mengunduh. Cek kembali input kamu.");
+                            console.log(errors);
+                        },
+                    });
+                }
             }
         } catch (error) {
             notification.error({
@@ -41,9 +109,26 @@ const ExportBeritaModal = ({ visible, onClose, menu }) => {
         }
     };
 
+    // Fungsi untuk download gambar
+    const downloadImage = () => {
+        if (generatedImage) {
+            const bulanText = bulan ? 
+                ["Januari", "Februari", "Maret", "April", "Mei", "Juni", 
+                 "Juli", "Agustus", "September", "Oktober", "November", "Desember"][bulan - 1] 
+                : "undefined";
+                
+            const link = document.createElement('a');
+            link.href = generatedImage;
+            link.download = `berita-${unitKerja || 'undefined'}-${bulanText}-${tahun || 'undefined'}.png`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+    };
+
     const options = [
-        { label: "Excel", value: "excel" },
-        { label: "CSV", value: "csv" },
+        { label: "PNG", value: "png" },
+        { label: "PDF", value: "pdf" },
     ];
 
     return (
@@ -64,6 +149,7 @@ const ExportBeritaModal = ({ visible, onClose, menu }) => {
                     Simpan
                 </Button>,
             ]}
+            width={generatedImage ? 850 : 400}
         >
             <Form
                 layout="vertical"
@@ -86,9 +172,10 @@ const ExportBeritaModal = ({ visible, onClose, menu }) => {
                             <button
                                 type="button"
                                 key={option.value}
-                                onClick={() =>
-                                    form.setFieldValue("format", option.value)
-                                }
+                                onClick={() => {
+                                    form.setFieldValue("format", option.value);
+                                    setGeneratedImage(null);
+                                }}
                                 className={`px-4 py-2 rounded-md border transition-all duration-150 ${
                                     selectedFormat === option.value
                                         ? "border-blue-500 bg-blue-50 text-blue-600"
@@ -96,14 +183,13 @@ const ExportBeritaModal = ({ visible, onClose, menu }) => {
                                 }`}
                             >
                                 <div className="flex items-center justify-center gap-2">
-                                    {/* <span className="inline-block w-3 h-3 border-2 border-gray-400 rounded-full" /> */}
-
                                     {option.label}
                                 </div>
                             </button>
                         ))}
                     </div>
                 </Form.Item>
+                
                 <Form.Item
                     name="unit_kerja"
                     label="Unit Kerja"
@@ -154,8 +240,42 @@ const ExportBeritaModal = ({ visible, onClose, menu }) => {
                         </Form.Item>
                     </Col>
                 </Row>
-                
             </Form>
+            
+            {/* Bagian preview gambar */}
+            {selectedFormat === 'png' && (
+                <div className="mt-4">
+                    <Divider>Preview Gambar</Divider>
+                    {imageLoading ? (
+                        <div className="flex justify-center p-6">
+                            <Spin tip="Generating image..." />
+                        </div>
+                    ) : generatedImage ? (
+                        <div className="mt-4">
+                            <div className="border rounded p-2 mb-3">
+                                <img 
+                                    src={generatedImage} 
+                                    alt="Generated Preview" 
+                                    className="w-full h-auto" 
+                                    style={{ maxHeight: '400px', objectFit: 'contain' }}
+                                />
+                            </div>
+                            <div className="flex justify-end">
+                                <Button type="primary" onClick={downloadImage}>
+                                    Download Gambar
+                                </Button>
+                            </div>
+                        </div>
+                    ) : (
+                        <div className="text-center text-gray-500 p-6 border border-dashed rounded">
+                            Klik tombol "Simpan" untuk menghasilkan gambar dengan data dari form
+                        </div>
+                    )}
+                </div>
+            )}
+            
+            {/* Canvas yang tersembunyi untuk membuat gambar (tidak perlu ditampilkan) */}
+            <canvas ref={canvasRef} style={{ display: 'none' }} width="800" height="500" />
         </Modal>
     );
 };

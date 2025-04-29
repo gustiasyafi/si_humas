@@ -10,29 +10,36 @@ import {
     PopiconsEyeLine,
     PopiconsPlusLine,
     PopiconsBinLine,
-    PopiconsFileDownloadLine
+    PopiconsFileDownloadLine,
 } from "@popicons/react";
 import UbahStatusBeritaModal from "@/Components/UbahStatusBeritaModal";
 import { useState } from "react";
 import ExportBeritaModal from "@/Components/ExportBeritaModal";
 
-export default function Index ({ berita_list }) {
+export default function Index({ berita_list }) {
     const { Search } = Input;
     const [searchTerm, setSearchTerm] = useState("");
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const onSearch = (value) => {
+        setCurrentPage(1);
         setSearchTerm(value.toLowerCase());
     };
-    
+
     const [statusOpen, setStatusOpen] = useState(false);
     const [selectedBerita, setSelectedBerita] = useState(null);
     const [showExportModal, setShowExportModal] = useState(false);
+    const [currentPage, setCurrentPage] = useState(1);
+    const [pageSize, setPageSize] = useState(10);
 
+    const handleTableChange = (pagination) => {
+        setCurrentPage(pagination.current);
+        setPageSize(pagination.pageSize);
+    };
     const breadcrumbItems = [
         { title: "Beranda", href: "/dashboard" },
         { title: "Berita" },
     ];
-    
+
     const handleView = (userId) => {
         router.visit(`/berita/detail/${userId}`);
     };
@@ -46,7 +53,7 @@ export default function Index ({ berita_list }) {
     };
 
     const handleDelete = () => {
-        router.delete(route('berita.destroy', selectedBerita.id), {
+        router.delete(route("berita.destroy", selectedBerita.id), {
             onSuccess: () => {
                 message.success("Berita berhasil dihapus");
                 setIsDeleteModalOpen(false);
@@ -57,12 +64,22 @@ export default function Index ({ berita_list }) {
         });
     };
 
-    console.log("Berita List:", berita_list); 
     const columns = [
+        {
+            title: "No",
+            key: "index",
+            render: (text, record, index) =>
+                (currentPage - 1) * pageSize + index + 1,
+        },
         { title: "Judul Berita", dataIndex: "title", key: "title" },
         { title: "Kategori", dataIndex: "category", key: "category" },
         { title: "Prioritas", dataIndex: "priority", key: "priority" },
         { title: "Catatan", dataIndex: "notes", key: "notes" },
+        {
+            title: "Unit Kerja",
+            key: "unit_kerja",
+            render: (text, record) => record.user?.unit_kerja ?? "-",
+        },
         {
             title: "Status",
             dataIndex: "status",
@@ -161,18 +178,17 @@ export default function Index ({ berita_list }) {
                                     style={{ width: 250 }}
                                     size="large"
                                     onSearch={onSearch}
-                                    onChange={(e) =>setSearchTerm(e.target.value.toLowerCase())}
                                 />
                             </div>
                             <div className="px-4 mb-4 mt-4">
                                 <Button
                                     size="large"
                                     icon={<PopiconsFileDownloadLine />}
-                                    onClick={() =>setShowExportModal(true)}
+                                    onClick={() => setShowExportModal(true)}
                                 >
                                     Ekspor
                                 </Button>
-                            </div> 
+                            </div>
                             <div>
                                 <Button
                                     type="primary"
@@ -187,12 +203,19 @@ export default function Index ({ berita_list }) {
                             </div>
                         </div>
                         <div className="px-6 mb-4">
-                        <DataTable
-                            data={berita_list.filter((item) =>
-                                item.title.toLowerCase().includes(searchTerm)
-                            )}
-                            columns={columns}
-                        />
+                            <DataTable
+                                dataSource={berita_list.filter((item) =>
+                                    item.title
+                                        .toLowerCase()
+                                        .includes(searchTerm),
+                                )}
+                                columns={columns}
+                                pagination={{
+                                    pageSize: pageSize,
+                                    current: currentPage,
+                                }}
+                                onChange={handleTableChange}
+                            />
                         </div>
                     </div>
                 </div>
@@ -201,7 +224,7 @@ export default function Index ({ berita_list }) {
                 <UbahStatusBeritaModal
                     data={selectedBerita}
                     visible={statusOpen}
-                    menu={'berita'}
+                    menu={"berita"}
                     onClose={() => setStatusOpen(false)}
                 />
             )}
@@ -222,12 +245,14 @@ export default function Index ({ berita_list }) {
                     Tindakan ini tidak dapat dibatalkan.
                 </p>
             </Modal>
-            <ExportBeritaModal
-                visible={showExportModal}
-                onClose={() => setShowExportModal(false)}
-                menu={"berita"}
-                data={{  }}
+            {showExportModal && (
+                <ExportBeritaModal
+                    visible={showExportModal}
+                    onClose={() => setShowExportModal(false)}
+                    menu={"berita"}
+                    data={{}}
                 />
+            )}
         </DashboardLayout>
     );
 }

@@ -5,8 +5,11 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Berita;
 use App\Models\Agenda;
+use App\Models\FileBerita;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
+
 // use App\Http\Controllers\Agenda;
 
 class BeritaController extends Controller
@@ -23,8 +26,9 @@ class BeritaController extends Controller
             $query->where('user_id', $user->id);
         }
         $beritas = $query->latest()->get();
+        $beritas->load('user');
         return Inertia::render('Konten/Berita/Index', [
-            'berita_list' => $beritas, 
+            'berita_list' => $beritas,
         ]);
     }
 
@@ -45,19 +49,20 @@ class BeritaController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'agenda_id' => 'nullable|exists:agendas,id',
+            'agenda_id' => 'sometimes|nullable|exists:agendas,id',
             'title' => 'required|string|max:255',
             'description' => 'required|string|max:500',
             'date' => 'required|date',
             'category' => 'required|string|max:255',
-            'link' => 'nullable|url|max:255',
+            'link' => 'nullable|string|max:255',
             'priority' => 'required|string|max:255',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             'publish' => 'required|string|max:255',
             'notes' => 'nullable|string|max:500',
+            'files.*' => 'file',
         ]);
 
-        Berita::create([
+        $berita = Berita::create([
             'user_id' => Auth::user()->id,
             'agenda_id' => $validated['agenda_id'] ?? null,
             'title' => $validated['title'],
@@ -66,12 +71,23 @@ class BeritaController extends Controller
             'category' => $validated['category'],
             'link' => $validated['link'] ?? null,
             'priority' => $validated['priority'],
-            'file_path' => $request->file('image') ? $request->file('image')->store('images') : null,
             'publish' => $validated['publish'],
             'notes' => $validated['notes'],
             'status' => 'Diajukan',
-
         ]);
+
+        if ($request->hasFile('files')) {
+            foreach ($request->file('files') as $file) {
+                $originalName = $file->getClientOriginalName();
+                $path = $file->store('uploads/berita', 'public');
+                print($originalName);
+                FileBerita::create([
+                    'berita_id' => $berita->id,
+                    'file_path' => $path,
+                    'file_name' => $originalName,
+                ]);
+            }
+        }
         return redirect()->route('berita')->with('success', 'Berita berhasil disimpan.');
     }
 
@@ -86,9 +102,10 @@ class BeritaController extends Controller
             return redirect()->route('berita')->with('error', 'Anda tidak memiliki akses ke berita ini.');
         }
         $berita->load('agenda');
+        $berita->load('files');
         // dd($berita->agenda);
         return Inertia::render('Konten/Berita/Show', [
-            'berita' => $berita,
+            'berita' => $berita
         ]);
     }
 
@@ -103,6 +120,7 @@ class BeritaController extends Controller
             return redirect()->route('berita')->with('error', 'Anda tidak memiliki akses ke berita ini.');
         }
         $berita->load('agenda');
+        $berita->load('files');
         $agendaList = Agenda::select('id', 'name')->get();
         return Inertia::render('Konten/Berita/Edit', [
             'agendaList' => $agendaList,
@@ -120,20 +138,50 @@ class BeritaController extends Controller
         if ($user->hasRole('user') && Auth::user()->id !== $berita->user_id) {
             return redirect()->route('berita')->with('error', 'Anda tidak memiliki akses ke berita ini.');
         }
+
+        // dd($request->all());
+
         $validated = $request->validate([
-            'agenda_id' => 'nullable|exists:agendas,id',
+            'agenda_id' => 'sometimes|nullable|exists:agendas,id',
             'title' => 'required|string|max:255',
             'description' => 'required|string|max:500',
             'date' => 'required|date',
             'category' => 'required|string|max:255',
-            'link' => 'nullable|url|max:255',
+            'link' => 'nullable|string|max:255',
             'priority' => 'required|string|max:255',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             'publish' => 'required|string|max:255',
             'notes' => 'nullable|string|max:500',
+            'files.*' => 'sometimes|file',
         ]);
 
         $berita->update($validated);
+
+        $existingFileIds = $request->input('existing_files', []);
+
+        // Hapus file lama yang tidak dipertahankan
+        $filesToDelete = FileBerita::where('berita_id', $berita->id)
+            ->whereNotIn('id', $existingFileIds)
+            ->get();
+
+        foreach ($filesToDelete as $file) {
+            Storage::disk('public')->delete($file->file_path);
+            $file->delete();
+        }
+
+        // Simpan file baru jika ada
+        if ($request->hasFile('files')) {
+            foreach ($request->file('files') as $file) {
+                $originalName = $file->getClientOriginalName();
+                $path = $file->store('uploads/berita', 'public');
+
+                FileBerita::create([
+                    'berita_id' => $berita->id,
+                    'file_path' => $path,
+                    'file_name' => $originalName,
+                ]);
+            }
+        }
 
         return redirect()->route('berita')->with('success', 'Berita berhasil diperbarui.');
     }

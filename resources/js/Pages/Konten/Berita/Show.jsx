@@ -2,8 +2,8 @@
 import DashboardLayout from "@/Layouts/DashboardLayout";
 import { Head, router } from "@inertiajs/react";
 import Breadcrumbs from "@/Components/Breadcrumbs";
-import { Descriptions, Button } from "antd";
-import { PopiconsEditPencilLine } from "@popicons/react";
+import { Descriptions, Button, List, Avatar } from "antd";
+import { PopiconsEditPencilLine, PopiconsFileDuotone } from "@popicons/react";
 import dayjs from "dayjs";
 
 export default function Show({ berita }) {
@@ -13,16 +13,19 @@ export default function Show({ berita }) {
         { title: "Detail Berita" },
     ];
 
+    console.log(berita);
+
     const formattedBerita = {
         agenda: berita.agenda?.name || "Tidak ada",
         title: berita.title,
         description: berita.description,
         date: dayjs(berita.date).format("DD/MM/YYYY"),
         category: berita.category,
-        link: berita.link,
+        link: berita.link || null,
         priority: berita.priority,
         publish: berita.publish ? berita.publish.split(",").join(",") : "None",
         status: berita.status || "Tidak ada",
+        files: berita.files || [],
     };
 
     const handleEdit = () => {
@@ -67,18 +70,18 @@ export default function Show({ berita }) {
                             {formattedBerita.category}
                         </Descriptions.Item>
                         <Descriptions.Item label="Link Berita ">
-                        {formattedBerita.link ? (
-                            <a
-                                href={formattedBerita.link}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="text-blue-600 hover:underline"
-                            >
-                                {formattedBerita.link}
-                            </a>
-                        ) : (
-                            "Tidak ada link"
-                        )}
+                            {formattedBerita.link ? (
+                                <a
+                                    href={formattedBerita.link}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-blue-600 hover:underline"
+                                >
+                                    {formattedBerita.link}
+                                </a>
+                            ) : (
+                                "Tidak ada link"
+                            )}
                         </Descriptions.Item>
                         <Descriptions.Item label="Prioritas Berita">
                             {formattedBerita.priority}
@@ -88,6 +91,52 @@ export default function Show({ berita }) {
                         </Descriptions.Item> */}
                         <Descriptions.Item label="Media Publikasi">
                             {formattedBerita.publish}
+                        </Descriptions.Item>
+                        <Descriptions.Item label="File Upload">
+                            <List
+                                size="small"
+                                dataSource={formattedBerita.files}
+                                renderItem={(file) => {
+                                    const isImage =
+                                        /\.(jpg|jpeg|png|gif|bmp|webp)$/i.test(
+                                            file.file_name,
+                                        );
+                                    const fileUrl = `/storage/${file.file_path}`;
+
+                                    return (
+                                        <List.Item>
+                                            <List.Item.Meta
+                                                avatar={
+                                                    isImage ? (
+                                                        <Avatar
+                                                            shape="square"
+                                                            size={48}
+                                                            src={fileUrl}
+                                                        />
+                                                    ) : (
+                                                        <Avatar
+                                                            shape="square"
+                                                            size={48}
+                                                            icon={
+                                                                <PopiconsFileDuotone />
+                                                            }
+                                                        />
+                                                    )
+                                                }
+                                                title={
+                                                    <a
+                                                        href={fileUrl}
+                                                        target="_blank"
+                                                        rel="noopener noreferrer"
+                                                    >
+                                                        {file.file_name}
+                                                    </a>
+                                                }
+                                            />
+                                        </List.Item>
+                                    );
+                                }}
+                            />
                         </Descriptions.Item>
                         <Descriptions.Item label="Status Berita">
                             {formattedBerita.status}

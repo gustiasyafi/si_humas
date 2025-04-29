@@ -1,21 +1,26 @@
 <?php
 
 use App\Http\Controllers\ProfileController;
-use App\Http\Controllers\AgendaController;  
+use App\Http\Controllers\AgendaController;
 use App\Http\Controllers\BeritaController;
 use App\Http\Controllers\UserController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
-Route::get('/', function () {
-    return Inertia::render('Welcome', [
-        'canLogin' => Route::has('login'),
-        'canRegister' => Route::has('register'),
-        'laravelVersion' => Application::VERSION,
-        'phpVersion' => PHP_VERSION,
-    ]);
+Route::middleware('guest')->group(function () {
+    Route::get('/', function () {
+        return redirect()->route('login');
+    });
 });
+
+// Rute untuk pengguna yang sudah login
+Route::middleware('auth')->group(function () {
+    Route::get('/', function () {
+        return redirect()->route('dashboard');
+    });
+});
+
 
 Route::get('/dashboard', function () {
     return Inertia::render('Dashboard');
@@ -27,15 +32,15 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
-Route::get('/agenda', [AgendaController::class, 'index']) 
-  ->middleware(['auth', 'verified'])->name('agenda');
+Route::get('/agenda', [AgendaController::class, 'index'])
+    ->middleware(['auth', 'verified'])->name('agenda');
 
 Route::get('/agenda/tambah', function () {
     return Inertia::render('Konten/Agenda/Create');
 })->middleware(['auth', 'verified'])->name('form-agenda');
 
 Route::get('/agenda/detail/{agenda}', [AgendaController::class, 'show'])
-  ->middleware(['auth', 'verified'])->name('agenda.show');
+    ->middleware(['auth', 'verified'])->name('agenda.show');
 
 Route::post('/agenda/store', [AgendaController::class, 'store'])
     ->middleware(['auth', 'verified'])->name('agenda.store');
@@ -59,12 +64,12 @@ Route::get('/berita/detail/{berita}', [BeritaController::class, 'show'])
     ->middleware(['auth', 'verified'])->name('berita.show');
 Route::get('/berita/edit/{berita}', [BeritaController::class, 'edit'])
     ->middleware(['auth', 'verified'])->name('berita.edit');
-Route::put('/berita/update/{berita}', [BeritaController::class, 'update'])
+Route::post('/berita/update/{berita}', [BeritaController::class, 'update'])
     ->middleware(['auth', 'verified'])->name('berita.update');
 
 Route::post('/berita/store', [BeritaController::class, 'store'])
     ->middleware(['auth', 'verified'])->name('berita.store');
-Route::put ('/berita/cancel/{berita}', [BeritaController::class, 'cancel'])
+Route::put('/berita/cancel/{berita}', [BeritaController::class, 'cancel'])
     ->middleware(['auth', 'verified'])->name('berita.cancel');
 Route::delete('/berita/delete/{berita}', [BeritaController::class, 'destroy'])
     ->middleware(['auth', 'verified'])->name('berita.destroy');

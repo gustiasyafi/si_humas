@@ -10,36 +10,34 @@ import {
     Divider,
     Select,
     Upload,
-    message,
 } from "antd";
 import { PopiconsPlusLine } from "@popicons/react";
-import { InboxOutlined } from "@ant-design/icons";
+import { UploadOutlined } from "@ant-design/icons";
 import Swal from "sweetalert2";
 import { router } from "@inertiajs/react";
 import dayjs from "dayjs";
 // import ReactQuill from "react-quill";
 // import 'react-quill/dist/quill.snow.css'; // Import the styles
 
-const { Dragger } = Upload;
-const props = {
-    name: "file",
-    multiple: true,
-    action: "https://660d2bd96ddfa2943b33731c.mockapi.io/api/upload",
-    onChange(info) {
-        const { status } = info.file;
-        if (status !== "uploading") {
-            console.log(info.file, info.fileList);
-        }
-        if (status === "done") {
-            message.success(`${info.file.name} file uploaded successfully.`);
-        } else if (status === "error") {
-            message.error(`${info.file.name} file upload failed.`);
-        }
-    },
-    onDrop(e) {
-        console.log("Dropped files", e.dataTransfer.files);
-    },
-};
+// const props = {
+//     name: "file",
+//     multiple: true,
+//     action: "https://660d2bd96ddfa2943b33731c.mockapi.io/api/upload",
+//     onChange(info) {
+//         const { status } = info.file;
+//         if (status !== "uploading") {
+//             console.log(info.file, info.fileList);
+//         }
+//         if (status === "done") {
+//             message.success(`${info.file.name} file uploaded successfully.`);
+//         } else if (status === "error") {
+//             message.error(`${info.file.name} file upload failed.`);
+//         }
+//     },
+//     onDrop(e) {
+//         console.log("Dropped files", e.dataTransfer.files);
+//     },
+// };
 
 const PUBLISH_OPTIONS = ["Website Official", "Instagram", "Facebook", "X"];
 
@@ -96,6 +94,8 @@ export default function FormBerita({
         console.log("search:", value);
     };
 
+    const [fileList, setFileList] = useState([]);
+
     const [categoryValue, setCategoryValue] = useState(null);
 
     const [items1, setItems1] = useState([
@@ -151,21 +151,39 @@ export default function FormBerita({
     ); // Filter options for multi-select
     const onFinish = async (values) => {
         try {
+            console.log("Form submitted:", values);
+            const submitData = new FormData();
             const publishValue = values.publish.join(",");
-            const submitData = {
-                agenda_id: values.name, // <- pakai yang sudah disimpan dari Select Agenda
-                title: values.berita,
-                description: values.description,
-                date: values.date.format("YYYY-MM-DD"),
-                category: values.category,
-                link: values.link,
-                priority: values.priority,
-                publish: publishValue,
-                notes: values.notes || "",
-            };
+            console.log(values);
+            console.log(form.getFieldsValue());
+            submitData.append("agenda_id", values.agenda_id || "");
+            submitData.append("title", values.berita);
+            submitData.append("description", values.description);
+            submitData.append("date", values.date.format("YYYY-MM-DD"));
+            submitData.append("category", values.category);
+            submitData.append("link", values.link || "");
+            submitData.append("priority", values.priority);
+            submitData.append("publish", publishValue);
+            submitData.append("notes", values.notes || "");
+
+            fileList.forEach((file) => {
+                if (file.originFileObj) {
+                    submitData.append("files[]", file.originFileObj);
+                }
+            });
+
+            const existingFileIds = fileList
+                .filter((file) => !file.originFileObj && file.id) // file lama
+                .map((file) => file.id);
+
+            existingFileIds.forEach((id) => {
+                submitData.append("existing_files[]", id);
+            });
 
             if (isEdit) {
-                router.put(route("berita.update", berita.id), submitData, {
+                router.post(route("berita.update", berita.id), submitData, {
+                    headers: { "Content-Type": "multipart/form-data" },
+                    forceFormData: true,
                     onSuccess: () => {
                         Swal.fire({
                             icon: "success",
@@ -190,6 +208,7 @@ export default function FormBerita({
                 });
             } else {
                 router.post(route("berita.store"), submitData, {
+                    headers: { "Content-Type": "multipart/form-data" },
                     onSuccess: () => {
                         Swal.fire({
                             icon: "success",
@@ -227,16 +246,23 @@ export default function FormBerita({
         if (isEdit && berita) {
             const publishMediaArray = berita.publish.split(", ") || [];
             form.setFieldsValue({
-                name: berita.agenda.id,
+                agenda_id: berita.agenda?.id || null,
                 berita: berita.title,
                 description: berita.description,
                 date: dayjs(berita.date),
                 category: berita.category,
-                link: berita.link,
+                link: berita.link || null,
                 priority: berita.priority,
                 publish: publishMediaArray,
             });
-            // setIsAgendaSelected(true);
+            const mappedFileList = berita.files.map((file, index) => ({
+                uid: String(index),
+                id: file.id,
+                name: file.file_name,
+                status: "done",
+                url: `/storage/${file.file_path}`,
+            }));
+            setFileList(mappedFileList);
         }
     }, [berita, form, isEdit, type]);
 
@@ -261,7 +287,7 @@ export default function FormBerita({
                             autoComplete="off"
                         >
                             <Form.Item
-                                name="name"
+                                name="agenda_id"
                                 label="Agenda"
                                 style={{ width: "100%" }}
                             >
@@ -409,6 +435,17 @@ export default function FormBerita({
                                     name="link"
                                     label="Link (jika sudah terpublikasi media lain)"
                                     style={{ width: "50%" }}
+                                    rules={[
+                                        {
+                                            required: false, // Tidak wajib diisi
+                                        },
+                                        {
+                                            pattern:
+                                                /^(https?:\/\/)?([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,7}([\\/\w .-]*)*\/?$/, // Regex untuk validasi URL tanpa http
+                                            message:
+                                                "Mohon masukkan URL yang valid",
+                                        },
+                                    ]}
                                 >
                                     <Input
                                         placeholder="Masukkan Lokasi"
@@ -443,21 +480,22 @@ export default function FormBerita({
                                     label="Upload File"
                                     style={{ width: "50%" }}
                                 >
-                                    <Dragger {...props}>
-                                        <p className="ant-upload-drag-icon">
-                                            <InboxOutlined />
-                                        </p>
-                                        <p className="ant-upload-text">
-                                            Klik atau seret file ke area ini
-                                            untuk mengunggah
-                                        </p>
-                                        <p className="ant-upload-hint">
-                                            Mendukung unggahan tunggal atau
-                                            banyak file. Jangan unggah data
-                                            perusahaan atau file terlarang
-                                            lainnya.
-                                        </p>
-                                    </Dragger>
+                                    <Upload
+                                        multiple
+                                        listType="picture"
+                                        beforeUpload={() => false}
+                                        fileList={fileList}
+                                        onChange={({ fileList }) =>
+                                            setFileList(fileList)
+                                        }
+                                    >
+                                        <Button
+                                            type="primary"
+                                            icon={<UploadOutlined />}
+                                        >
+                                            Upload
+                                        </Button>
+                                    </Upload>
                                 </Form.Item>
 
                                 <Form.Item

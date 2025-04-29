@@ -23,12 +23,19 @@ class Berita extends Model
         'publish',
         'notes',
         'status'
-    
+
     ];
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'agenda_id');
+    }
     public function agenda()
     {
         return $this->belongsTo(Agenda::class, 'agenda_id');
     }
-    
 
+    public function files()
+    {
+        return $this->hasMany(FileBerita::class);
+    }
 }

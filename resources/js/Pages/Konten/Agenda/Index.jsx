@@ -16,7 +16,11 @@ import { useEffect, useState } from "react";
 import UbahStatusAgendaModal from "@/Components/UbahStatusAgendaModal";
 import ExportAgendaModal from "@/Components/ExportAgendaModal";
 
-export default function Agenda({ agenda_list, success_message, error_message }) {
+export default function Agenda({
+    agenda_list,
+    success_message,
+    error_message,
+}) {
     useEffect(() => {
         if (success_message) {
             message.success(success_message);
@@ -29,6 +33,7 @@ export default function Agenda({ agenda_list, success_message, error_message }) 
 
     const [searchTerm, setSearchTerm] = useState("");
     const onSearch = (value) => {
+        setCurrentPage(1);
         setSearchTerm(value.toLowerCase());
     };
     const [statusOpen, setStatusOpen] = useState(false);
@@ -39,6 +44,14 @@ export default function Agenda({ agenda_list, success_message, error_message }) 
         { title: "Agenda" },
     ];
     const [showExportModal, setShowExportModal] = useState(false);
+
+    const [currentPage, setCurrentPage] = useState(1);
+    const [pageSize, setPageSize] = useState(10);
+
+    const handleTableChange = (pagination) => {
+        setCurrentPage(pagination.current);
+        setPageSize(pagination.pageSize);
+    };
 
     const handleView = (agendaId) => {
         if (!agendaId) {
@@ -73,17 +86,18 @@ export default function Agenda({ agenda_list, success_message, error_message }) 
         {
             title: "No",
             key: "index",
-            render: (text, record, index) => index + 1, // Display serial number starting from 1
+            render: (text, record, index) =>
+                (currentPage - 1) * pageSize + index + 1,
         },
-        { 
-            title: "Nama Agenda", 
-            dataIndex: "name", 
+        {
+            title: "Nama Agenda",
+            dataIndex: "name",
             key: "name",
             sorter: (a, b) => a.name.localeCompare(b.name),
         },
-        { 
-            title: "Tanggal", 
-            dataIndex: "date", 
+        {
+            title: "Tanggal",
+            dataIndex: "date",
             key: "date",
         },
         { title: "Waktu", dataIndex: "time", key: "time" },
@@ -96,10 +110,11 @@ export default function Agenda({ agenda_list, success_message, error_message }) 
             dataIndex: "status_agenda",
             key: "status_agenda",
         },
-        { 
+        {
             title: "Catatan",
-            dataIndex: "notes", 
-            key: "notes" },
+            dataIndex: "notes",
+            key: "notes",
+        },
         {
             title: "Status",
             dataIndex: "status",
@@ -115,7 +130,7 @@ export default function Agenda({ agenda_list, success_message, error_message }) 
                                 ? "blue"
                                 : status === "Ditolak"
                                   ? "red"
-                                    : "default"
+                                  : "default"
                     }
                 >
                     {status}
@@ -199,20 +214,17 @@ export default function Agenda({ agenda_list, success_message, error_message }) 
                                     style={{ width: 250 }}
                                     size="large"
                                     onSearch={onSearch}
-                                    onChange={(e) =>
-                                        setSearchTerm(e.target.value.toLowerCase())
-                                    }
                                 />
                             </div>
                             <div className="px-4 mb-4 mt-4">
                                 <Button
                                     size="large"
                                     icon={<PopiconsFileDownloadLine />}
-                                    onClick={() =>setShowExportModal(true)}
+                                    onClick={() => setShowExportModal(true)}
                                 >
                                     Ekspor
                                 </Button>
-                            </div> 
+                            </div>
                             <div>
                                 <Button
                                     type="primary"
@@ -227,11 +239,19 @@ export default function Agenda({ agenda_list, success_message, error_message }) 
                             </div>
                         </div>
                         <div className="px-6 mb-4">
-                            <DataTable 
-                                data={agenda_list.filter((item)=>
-                                    item.name.toLowerCase().includes(searchTerm) 
-                                )} 
-                                columns={columns} />
+                            <DataTable
+                                dataSource={agenda_list.filter((item) =>
+                                    item.name
+                                        .toLowerCase()
+                                        .includes(searchTerm),
+                                )}
+                                columns={columns}
+                                pagination={{
+                                    pageSize: pageSize,
+                                    current: currentPage,
+                                }}
+                                onChange={handleTableChange}
+                            />
                         </div>
                     </div>
                 </div>
@@ -261,12 +281,14 @@ export default function Agenda({ agenda_list, success_message, error_message }) 
                     Tindakan ini tidak dapat dibatalkan.
                 </p>
             </Modal>
-            <ExportAgendaModal
-                visible={showExportModal}
-                onClose={() => setShowExportModal(false)}
-                menu={"agenda"}
-                data={{}} // kosong karena ini untuk tambah, bukan edit
-            />
+            {showExportModal && (
+                <ExportAgendaModal
+                    visible={showExportModal}
+                    onClose={() => setShowExportModal(false)}
+                    menu={"agenda"}
+                    data={{}} // kosong karena ini untuk tambah, bukan edit
+                />
+            )}
         </DashboardLayout>
     );
 }
