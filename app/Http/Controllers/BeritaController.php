@@ -31,6 +31,9 @@ class BeritaController extends Controller
         $beritas->load('user');
         return Inertia::render('Konten/Berita/Index', [
             'berita_list' => $beritas,
+            'auth' => [
+                'user' => Auth::user()
+            ]
         ]);
     }
 
@@ -191,15 +194,15 @@ class BeritaController extends Controller
     {
         /** @var \App\Models\User */
         $user = Auth::user();
-        if ($user->hasRole('user') && Auth::user()->id !== $berita->user_id) {
-            return redirect()->route('berita')->with('error', 'Anda tidak memiliki akses ke berita ini.');
+        if (!$user->hasRole('admin') && !$user->hasRole('superadmin')) {
+            return redirect()->route('berita')->with('error', 'Anda tidak memiliki akses untuk mengubah status.');
         }
         if (!$berita) {
             return redirect()->route('berita')->with('error', 'Berita not found');
         }
         $validated = $request->validate([
             'status' => 'required|string',
-            'notes' => 'required|string'
+            'notes' => 'nullable|string'
         ]);
         $berita->update($validated);
         return redirect()->route('berita')->with('message', 'Status updated successfully');

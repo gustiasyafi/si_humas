@@ -20,6 +20,7 @@ export default function Agenda({
     agenda_list,
     success_message,
     error_message,
+    auth,
 }) {
     useEffect(() => {
         if (success_message) {
@@ -164,15 +165,19 @@ export default function Agenda({
                                 label: "Edit Agenda",
                                 onClick: () => handleEdit(record.id),
                             },
-                            {
-                                key: "status",
-                                icon: <PopiconsBadgeCheckLine />,
-                                label: "Ubah Status",
-                                onClick: () => {
-                                    setSelectedAgenda(record);
-                                    setStatusOpen(true);
-                                },
-                            },
+                            ...(auth.user.role === "admin" || auth.user.role === "superadmin"
+                                ? [
+                                    {
+                                        key: "status",
+                                        icon: <PopiconsBadgeCheckLine />,
+                                        label: "Ubah Status",
+                                        onClick: () => {
+                                        setSelectedAgenda(record);
+                                        setStatusOpen(true);
+                                        },
+                                    },
+                                ]
+                            : []),
                             {
                                 key: "delete",
                                 icon: <PopiconsBinLine />,
@@ -216,6 +221,7 @@ export default function Agenda({
                                     onSearch={onSearch}
                                 />
                             </div>
+                            {statusOpen && selectedAgenda && (auth.user.role === "admin" || auth.user.role === "superadmin") && (
                             <div className="px-4 mb-4 mt-4">
                                 <Button
                                     size="large"
@@ -225,6 +231,7 @@ export default function Agenda({
                                     Ekspor
                                 </Button>
                             </div>
+                            )}
                             <div>
                                 <Button
                                     type="primary"
@@ -256,7 +263,7 @@ export default function Agenda({
                     </div>
                 </div>
             </div>
-            {statusOpen && (
+            {(auth.user.role === 'admin' || auth.user.role === 'superadmin') && (
                 <UbahStatusAgendaModal
                     data={selectedAgenda}
                     visible={statusOpen}

@@ -29,6 +29,9 @@ class AgendaController extends Controller
             'agenda_list' => $agendas,
             'success_message' => session('success'),
             'error_message' => session('error'),
+            'auth' => [
+                'user' => Auth::user()
+            ]
         ]);
     }
     public function show(Agenda $agenda)
@@ -123,10 +126,9 @@ class AgendaController extends Controller
 
          /** @var \App\Models\User */
          $user = Auth::user();
-         if ($user->hasRole('user') && Auth::user()->id !== $agenda->user_id) {
-             return redirect()->route('agenda')->with('error', 'Anda tidak memiliki akses ke agenda ini.');
-         }
-
+        if (!$user->hasRole('admin') && !$user->hasRole('superadmin')) {
+            return redirect()->route('agenda')->with('error', 'Anda tidak memiliki akses untuk mengubah status.');
+        }
         // Validasi status
         $validated = $request->validate([
             'status' => 'required|string',

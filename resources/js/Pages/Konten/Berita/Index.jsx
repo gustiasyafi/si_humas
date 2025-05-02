@@ -16,7 +16,7 @@ import UbahStatusBeritaModal from "@/Components/UbahStatusBeritaModal";
 import { useState } from "react";
 import ExportBeritaModal from "@/Components/ExportBeritaModal";
 
-export default function Index({ berita_list }) {
+export default function Index({ berita_list, auth }) {
     const { Search } = Input;
     const [searchTerm, setSearchTerm] = useState("");
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
@@ -80,11 +80,16 @@ export default function Index({ berita_list }) {
         { title: "Kategori", dataIndex: "category", key: "category" },
         { title: "Prioritas", dataIndex: "priority", key: "priority" },
         { title: "Catatan", dataIndex: "notes", key: "notes" },
-        {
-            title: "Unit Kerja",
-            key: "unit_kerja",
-            render: (text, record) => record.user?.unit_kerja ?? "-",
-        },
+        ...(auth.user.role === "admin" || auth.user.role === "superadmin"
+            ? [
+                  {
+                      title: "Unit Kerja",
+                      key: "unit_kerja",
+                      render: (text, record) =>
+                          record.user?.unit_kerja ?? "-",
+                  },
+              ]
+            : []),
         {
             title: "Status",
             dataIndex: "status",
@@ -137,15 +142,19 @@ export default function Index({ berita_list }) {
                                 label: "Edit Data",
                                 onClick: () => handleEdit(record.id),
                             },
-                            {
-                                key: "status",
-                                icon: <PopiconsBadgeCheckLine />,
-                                label: "Ubah Status",
-                                onClick: () => {
-                                    setSelectedBerita(record);
-                                    setStatusOpen(true);
-                                },
-                            },
+                            ...(auth.user.role === "admin" || auth.user.role === "superadmin"
+                                ? [
+                                      {
+                                          key: "status",
+                                          icon: <PopiconsBadgeCheckLine />,
+                                          label: "Ubah Status",
+                                          onClick: () => {
+                                              setSelectedBerita(record);
+                                              setStatusOpen(true);
+                                          },
+                                      },
+                                  ]
+                                : []),
                             {
                                 key: "delete",
                                 icon: <PopiconsBinLine />,
@@ -190,6 +199,7 @@ export default function Index({ berita_list }) {
                                     onSearch={onSearch}
                                 />
                             </div>
+                            {(auth.user.role === "admin" || auth.user.role === "superadmin") && (
                             <div className="px-4 mb-4 mt-4">
                                 <Button
                                     size="large"
@@ -199,6 +209,7 @@ export default function Index({ berita_list }) {
                                     Ekspor
                                 </Button>
                             </div>
+                            )}
                             <div>
                                 <Button
                                     type="primary"
@@ -230,12 +241,12 @@ export default function Index({ berita_list }) {
                     </div>
                 </div>
             </div>
-            {statusOpen && (
+            {statusOpen && selectedBerita && (auth.user.role === 'admin' || auth.user.role === 'superadmin') && (
                 <UbahStatusBeritaModal
-                    data={selectedBerita}
                     visible={statusOpen}
-                    menu={"berita"}
                     onClose={() => setStatusOpen(false)}
+                    menu={"berita"}
+                    data={selectedBerita}
                 />
             )}
             <Modal
