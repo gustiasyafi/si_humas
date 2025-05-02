@@ -63,7 +63,6 @@ const UbahStatusBeritaModal = ({ visible, onClose, menu, data }) => {
                     initialValue={data.status}
                 >
                     <Select placeholder="Pilih status baru" size="large">
-                        <Option value="Diajukan">Diajukan</Option>
                         <Option value="Diproses">Diproses</Option>
                         <Option value="Ditolak">Ditolak</Option>
                         <Option value="Revisi">Perlu Revisi</Option>

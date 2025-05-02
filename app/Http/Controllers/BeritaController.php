@@ -9,6 +9,8 @@ use App\Models\FileBerita;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
+use Maatwebsite\Excel\Facades\Excel;
+use App\Exports\BeritaExport;
 
 // use App\Http\Controllers\Agenda;
 
@@ -217,4 +219,30 @@ class BeritaController extends Controller
         $berita->delete();
         return redirect()->route('berita')->with('success', 'Berita berhasil dihapus.');
     }
+    public function export(Request $request)
+    {
+        $request->validate([
+            'unit_kerja' => 'nullable|string',
+            'bulan' => 'nullable|integer|between:1,12',
+            'tahun' => 'nullable|integer',
+            'format' => 'required|in:xlsx,csv', // Format yang diizinkan
+        ]);
+
+        $query = Berita::with('user', 'agenda');
+
+        if ($request->unit_kerja) {
+            $query->where('unit_kerja', $request->unit_kerja);
+        }
+            
+        if ($request->bulan) {
+            $query->whereMonth('created_at', $request->bulan);  // Kolom 'date' adalah tanggal penulisan berita
+        }
+    
+        if ($request->tahun) {
+            $query->whereYear('created_at', $request->tahun);  // Kolom 'date' adalah tanggal penulisan berita
+        }
+        
+        return Excel::download(new BeritaExport($query), 'berita_export.' . $request->format);
+    }
+    
 }

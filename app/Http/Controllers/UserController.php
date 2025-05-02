@@ -16,6 +16,7 @@ class UserController extends Controller
     {
         $users = User::with('roles')->latest()->get()->map(function ($user) {
             $user->role = $user->roles->first()?->name ?? '-';
+            $user->unit_kerja = $user->unit_kerja ?? '-';
             unset($user->roles); // optional
             return $user;
         });

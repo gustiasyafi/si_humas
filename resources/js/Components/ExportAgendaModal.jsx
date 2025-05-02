@@ -118,8 +118,6 @@ const ExportAgendaModal = ({ visible, onClose, menu }) => {
     const options = [
         { label: "PNG", value: "png" }, 
         { label: "PDF", value: "pdf" },
-        { label: "Excel", value: "excel" },
-        { label: "CSV", value: "csv" },
     ];
 
     return (

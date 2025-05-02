@@ -137,9 +137,9 @@ export default function Agenda({
                 </Tag>
             ),
             filters: [
-                { text: "Dipublikasikan", value: "Dipublikasikan" },
                 { text: "Diajukan", value: "Diajukan" },
                 { text: "Diproses", value: "Diproses" },
+                { text: "Dipublikasikan", value: "Dipublikasikan" },
                 { text: "Ditolak", value: "Ditolak" },
             ],
             onFilter: (value, record) => record.status === value,

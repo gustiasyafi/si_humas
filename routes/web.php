@@ -1,9 +1,11 @@
 <?php
 
+use App\Exports\BeritaExport as ExportsBeritaExport;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\AgendaController;
 use App\Http\Controllers\BeritaController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\BeritaExport;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -76,6 +78,9 @@ Route::delete('/berita/delete/{berita}', [BeritaController::class, 'destroy'])
 Route::put('/berita/update-status/{berita}', [BeritaController::class, 'updateStatus'])
     ->middleware(['auth', 'verified'])->name('berita.update-status');
 
+Route::post('/berita/export', [BeritaController::class, 'export'])
+    ->middleware(['auth', 'verified'])->name('berita.export');
+
 Route::get('/user-management', [UserController::class, 'index'])
     ->middleware(['auth', 'verified'])->name('user-management');
 Route::post('/user-management/store', [UserController::class, 'store'])
@@ -88,5 +93,7 @@ Route::delete('/user-management/delete/{user}', [UserController::class, 'destroy
     ->middleware(['auth', 'verified'])->name('user-management.destroy');
 Route::put('/user-management/reset-password/{user}', [UserController::class, 'resetPassword'])
     ->middleware(['auth', 'verified'])->name('user-management.reset-password');
+
+
 
 require __DIR__ . '/auth.php';

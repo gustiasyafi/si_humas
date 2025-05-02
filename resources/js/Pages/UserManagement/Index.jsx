@@ -105,9 +105,10 @@ export default function Index({ user_list }) {
             onFilter: (value, record) => record.role === value,
         },
         {
-            title: "Unit/Fakultas",
+            title: "Unit Kerja",
             dataIndex: "unit_kerja",
             key: "unit_kerja",
+            render: (text) => text ?? "-",
         },
         {
             title: "Status",
@@ -244,7 +245,7 @@ export default function Index({ user_list }) {
                     </div>
 
                     <DataTable
-                        data={user_list}
+                        dataSource={user_list}
                         columns={columns}
                         pagination={{ pageSize: 10 }}
                     />

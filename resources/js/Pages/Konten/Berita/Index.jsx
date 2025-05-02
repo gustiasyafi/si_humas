@@ -71,7 +71,12 @@ export default function Index({ berita_list }) {
             render: (text, record, index) =>
                 (currentPage - 1) * pageSize + index + 1,
         },
-        { title: "Judul Berita", dataIndex: "title", key: "title" },
+        {   
+            title: "Judul Berita", 
+            dataIndex: "title", 
+            key: "title",
+            sorter: (a, b) => a.title.localeCompare(b.title),
+        },
         { title: "Kategori", dataIndex: "category", key: "category" },
         { title: "Prioritas", dataIndex: "priority", key: "priority" },
         { title: "Catatan", dataIndex: "notes", key: "notes" },
@@ -91,20 +96,25 @@ export default function Index({ berita_list }) {
                             ? "green"
                             : status === "Diajukan"
                               ? "orange"
-                              : status === "Dibatalkan"
-                                ? "gray"
+                              : status === "Perlu Revisi"
+                                ? "yellow"
                                 : status === "Diproses"
                                   ? "blue"
                                   : status === "Ditolak"
                                     ? "red"
-                                    : status === "Diverifikasi oleh Humas UNS"
-                                      ? "purple"
-                                      : "default"
+                                    : "default"
                     }
                 >
                     {status}
                 </Tag>
             ),
+            filters: [
+                { text: "Diajukan", value: "Diajukan" },
+                { text: "Diproses", value: "Diproses" },
+                { text: "Perlu Revisi", value: "Perlu Revisi" },
+                { text: "Dipublikasikan", value: "Dipublikasikan" },
+                { text: "Ditolak", value: "Ditolak" },
+            ],
             onFilter: (value, record) => record.status === value,
         },
         {
