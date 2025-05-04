@@ -221,7 +221,7 @@ export default function Agenda({
                                     onSearch={onSearch}
                                 />
                             </div>
-                            {statusOpen && selectedAgenda && (auth.user.role === "admin" || auth.user.role === "superadmin") && (
+                            {(auth.user.role === "admin" || auth.user.role === "superadmin") && (
                             <div className="px-4 mb-4 mt-4">
                                 <Button
                                     size="large"
@@ -263,7 +263,7 @@ export default function Agenda({
                     </div>
                 </div>
             </div>
-            {(auth.user.role === 'admin' || auth.user.role === 'superadmin') && (
+            { statusOpen && selectedAgenda && (auth.user.role === 'admin' || auth.user.role === 'superadmin') && (
                 <UbahStatusAgendaModal
                     data={selectedAgenda}
                     visible={statusOpen}

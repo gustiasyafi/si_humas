@@ -9,6 +9,7 @@ const { TextArea } = Input;
 const UbahStatusAgendaModal = ({ visible, onClose, menu, data }) => {
     const [form] = Form.useForm();
     const [loading, setLoading] = useState(false);
+    // const [status, setStatus] = useState(data?.status || "");
 
     const handleSubmit = async (values) => {
         setLoading(true);
@@ -41,7 +42,7 @@ const UbahStatusAgendaModal = ({ visible, onClose, menu, data }) => {
     return (
         <Modal
             title="Ubah Status Agenda"
-            visible={visible}
+            open={visible}
             onCancel={onClose}
             footer={[
                 <Button key="cancel" onClick={onClose}>
@@ -62,6 +63,7 @@ const UbahStatusAgendaModal = ({ visible, onClose, menu, data }) => {
                     label="Pilih Status Baru"
                     name={"status"}
                     initialValue={data.status}
+                    style={{ marginBottom: 12 }} 
                 >
                     <Select placeholder="Pilih status baru" size="large">
                         <Option value="Diproses">Diproses</Option>
@@ -69,7 +71,11 @@ const UbahStatusAgendaModal = ({ visible, onClose, menu, data }) => {
                         <Option value="Ditolak">Ditolak</Option>
                     </Select>
                 </Form.Item>
-                <Form.Item name={"notes"}>
+                <Form.Item 
+                    name={"notes"}
+                    label="Komentar"
+                    style={{ marginBottom: 0 }}
+                >
                     <TextArea
                         rows={4}
                         placeholder="Masukkan komentar Agenda disini"

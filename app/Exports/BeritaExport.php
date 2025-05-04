@@ -9,6 +9,7 @@ use Maatwebsite\Excel\Concerns\WithMapping;
 class BeritaExport implements FromQuery, WithHeadings, WithMapping
 {
     protected $query;
+    protected $rowNumber = 0;
 
     public function __construct($query)
     {
@@ -23,6 +24,7 @@ class BeritaExport implements FromQuery, WithHeadings, WithMapping
     public function headings(): array
     {
         return [
+            'No',
             'Judul',
             'Deskripsi',
             'Tanggal Agenda',
@@ -37,7 +39,9 @@ class BeritaExport implements FromQuery, WithHeadings, WithMapping
 
     public function map($berita): array
     {
+        $this->rowNumber++;
         return [
+            $this->rowNumber,
             $berita->title,
             $berita->description,
             $berita->date,
