@@ -22,12 +22,13 @@ class Berita extends Model
         'file_path',
         'publish',
         'notes',
-        'status'
+        'status',
+        'unit_kerja'
 
     ];
     public function user()
     {
-        return $this->belongsTo(User::class, 'agenda_id');
+        return $this->belongsTo(User::class, 'user_id');
     }
     public function agenda()
     {

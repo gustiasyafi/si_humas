@@ -14,7 +14,7 @@ import { useState } from "react";
 import FormUserModal from "@/Components/FormUserModal";
 // import ResetPasswordModal from "@/Components/ResetPasswordModal";
 
-export default function Index({ user_list }) {
+export default function Index({ user_list, unit_kerja_list }) {
     const { Search } = Input;
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const [selectedUser, setSelectedUser] = useState(null);
@@ -108,7 +108,6 @@ export default function Index({ user_list }) {
             title: "Unit Kerja",
             dataIndex: "unit_kerja",
             key: "unit_kerja",
-            render: (text) => text ?? "-",
         },
         {
             title: "Status",
@@ -275,6 +274,7 @@ export default function Index({ user_list }) {
                     onClose={() => setShowFormModal(false)}
                     menu={selectedMenu}
                     data={selectedUser} // ← kirim data user ke FormUserModal
+                    unit_kerja_list={unit_kerja_list}
                 />
             )}           
             

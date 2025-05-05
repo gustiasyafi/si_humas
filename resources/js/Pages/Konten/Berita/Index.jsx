@@ -16,7 +16,7 @@ import UbahStatusBeritaModal from "@/Components/UbahStatusBeritaModal";
 import { useState } from "react";
 import ExportBeritaModal from "@/Components/ExportBeritaModal";
 
-export default function Index({ berita_list, auth }) {
+export default function Index({ berita_list, auth, unit_kerja_list }) {
     const { Search } = Input;
     const [searchTerm, setSearchTerm] = useState("");
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
@@ -86,7 +86,7 @@ export default function Index({ berita_list, auth }) {
                       title: "Unit Kerja",
                       key: "unit_kerja",
                       render: (text, record) =>
-                          record.user?.unit_kerja ?? "-",
+                          record.user?.unit_kerja?.name ?? "-",
                   },
               ]
             : []),
@@ -186,10 +186,10 @@ export default function Index({ berita_list, auth }) {
                         <div className="px-6 mb-4 pt-4">
                             <Breadcrumbs items={breadcrumbItems} />
                         </div>
-                        <h1 className="px-6  text-gray-900 font-semibold text-2xl mt-4">
+                        <h1 className="px-6  text-gray-900 font-semibold text-2xl mt-4 mb-8">
                             Manajemen Berita
                         </h1>
-                        <div className="px-6 mb-4 mt-4 flex justify-between items-center">
+                        <div className="px-6 mb-6 flex justify-between items-center">
                             <div className="flex-1 mr-4">
                                 <Search
                                     placeholder="Search"
@@ -199,8 +199,9 @@ export default function Index({ berita_list, auth }) {
                                     onSearch={onSearch}
                                 />
                             </div>
+                            <div className="flex items-center gap-4"> 
                             {(auth.user.role === "admin" || auth.user.role === "superadmin") && (
-                            <div className="px-4 mb-4 mt-4">
+                            
                                 <Button
                                     size="large"
                                     icon={<PopiconsFileDownloadLine />}
@@ -208,9 +209,7 @@ export default function Index({ berita_list, auth }) {
                                 >
                                     Ekspor
                                 </Button>
-                            </div>
                             )}
-                            <div>
                                 <Button
                                     type="primary"
                                     size="large"
@@ -266,12 +265,12 @@ export default function Index({ berita_list, auth }) {
                     Tindakan ini tidak dapat dibatalkan.
                 </p>
             </Modal>
-            {showExportModal && (
+            {showExportModal && unit_kerja_list.length > 0 && (
                 <ExportBeritaModal
                     visible={showExportModal}
                     onClose={() => setShowExportModal(false)}
                     menu={"berita"}
-                    data={{}}
+                    unit_kerja_list={unit_kerja_list}
                 />
             )}
         </DashboardLayout>

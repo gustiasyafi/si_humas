@@ -208,10 +208,10 @@ export default function Agenda({
                         <div className="px-6 mb-4 pt-4">
                             <Breadcrumbs items={breadcrumbItems} />
                         </div>
-                        <h1 className="px-6  text-gray-900 font-semibold text-2xl mt-4">
+                        <h1 className="px-6  text-gray-900 font-semibold text-2xl mt-4 mb-8">
                             Manajemen Agenda
                         </h1>
-                        <div className="px-6 mb-4 mt-4 flex justify-between items-center">
+                        <div className="px-6 mb-4 flex justify-between items-center">
                             <div className="flex-1 mr-4">
                                 <Search
                                     placeholder="Search"
@@ -221,8 +221,8 @@ export default function Agenda({
                                     onSearch={onSearch}
                                 />
                             </div>
+                            <div className="flex items-center gap-4">
                             {(auth.user.role === "admin" || auth.user.role === "superadmin") && (
-                            <div className="px-4 mb-4 mt-4">
                                 <Button
                                     size="large"
                                     icon={<PopiconsFileDownloadLine />}
@@ -230,9 +230,7 @@ export default function Agenda({
                                 >
                                     Ekspor
                                 </Button>
-                            </div>
                             )}
-                            <div>
                                 <Button
                                     type="primary"
                                     size="large"

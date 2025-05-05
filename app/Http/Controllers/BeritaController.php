@@ -6,13 +6,13 @@ use Illuminate\Http\Request;
 use App\Models\Berita;
 use App\Models\Agenda;
 use App\Models\FileBerita;
+use App\Models\User;
+use App\Models\UnitKerja;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\BeritaExport;
-
-// use App\Http\Controllers\Agenda;
 
 class BeritaController extends Controller
 {
@@ -27,10 +27,12 @@ class BeritaController extends Controller
         if ($user->hasRole('user')) {
             $query->where('user_id', $user->id);
         }
-        $beritas = $query->latest()->get();
-        $beritas->load('user');
+        $beritas = $query->with('user.unitKerja')->latest()->get();
+        $unitKerjaList = UnitKerja::all();
+        
         return Inertia::render('Konten/Berita/Index', [
             'berita_list' => $beritas,
+            'unit_kerja_list' => $unitKerjaList,
             'auth' => [
                 'user' => Auth::user()
             ]
@@ -225,17 +227,21 @@ class BeritaController extends Controller
     public function export(Request $request)
     {
         $request->validate([
-            'unit_kerja' => 'nullable|string',
+            'unit_kerja' => 'nullable|exists:unit_kerjas,id',
             'bulan' => 'nullable|integer|between:1,12',
-            'tahun' => 'nullable|integer',
+            'tahun' => 'nullable|integer|min:2000|max:' . date('Y'),
             'format' => 'required|in:xlsx,csv', // Format yang diizinkan
         ]);
 
+
         $query = Berita::with('user', 'agenda');
 
-        if ($request->unit_kerja) {
-            $query->where('unit_kerja', $request->unit_kerja);
-        }
+            if ($request->unit_kerja) {
+                $query->whereHas('user.unitKerja', function ($q) use ($request) {
+                    $q->where('id', $request->unit_kerja);
+                });
+            }
+
             
         if ($request->bulan) {
             $query->whereMonth('created_at', $request->bulan);  // Kolom 'date' adalah tanggal penulisan berita

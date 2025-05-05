@@ -1,5 +1,6 @@
 import { Link, usePage } from "@inertiajs/react";
 import {
+    PopiconsClipboardTextLine,
     PopiconsFolderOpenLine,
     PopiconsHomeMinimalLine,
     PopiconsUsersLine,
@@ -35,6 +36,12 @@ export default function Sidebar({ collapsed, setCollapsed }) {
             allowedRoles: ["superadmin", "admin", "user"],
         },
         {
+            key: "master-data",
+            icon: <PopiconsClipboardTextLine />,
+            label: <Link href="/master-data">Master Data</Link>,
+            allowedRoles: ["superadmin"],
+        },
+        {
             key: "konten",
             icon: <PopiconsFolderOpenLine />,
             label: "Konten",
@@ -66,6 +73,8 @@ export default function Sidebar({ collapsed, setCollapsed }) {
     useEffect(() => {
         if (url.startsWith("/dashboard")) {
             setSelectedKeys(["beranda"]);
+        } else if (url.startsWith("/master-data")) {
+            setSelectedKeys(["master-data"]);
         } else if (url.startsWith("/agenda")) {
             setSelectedKeys(["agenda"]);
             if (!collapsed) setOpenKeys(["konten"]);

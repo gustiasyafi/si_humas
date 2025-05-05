@@ -22,11 +22,12 @@ class User extends Authenticatable
     protected $fillable = [
         'name',
         'email',
-        'unit_kerja',
+        'unit_kerja_id',
         'password',
         'status',
     ];
 
+    protected $with = ['unitKerja'];
     protected $appends = ['role'];
 
     public function getRoleAttribute()
@@ -55,5 +56,10 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+
+    public function unitKerja()
+    {
+        return $this->belongsTo(UnitKerja::class, 'unit_kerja_id' );
     }
 }

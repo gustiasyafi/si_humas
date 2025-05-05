@@ -18,7 +18,7 @@ class BeritaExport implements FromQuery, WithHeadings, WithMapping
 
     public function query()
     {
-        return $this->query->with('user', 'agenda'); // tambahkan relasi jika perlu
+        return $this->query;
     }
 
     public function headings(): array
@@ -50,7 +50,7 @@ class BeritaExport implements FromQuery, WithHeadings, WithMapping
             $berita->priority,
             $berita->status,
             optional($berita->agenda)->name,
-            optional($berita->user)->name,
+            optional($berita->user->unitKerja)->name,
         ];
     }
 

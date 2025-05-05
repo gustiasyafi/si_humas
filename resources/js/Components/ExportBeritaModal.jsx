@@ -3,9 +3,11 @@ import { Modal, Button, Form, Divider, Select, Row, Col, message } from "antd";
 import dayjs from "dayjs";
 import { useWatch } from "antd/es/form/Form";
 
-const ExportBeritaModal = ({ visible, onClose, }) => {
+const ExportBeritaModal = ({ visible, onClose, unit_kerja_list }) => {
     const [form] = Form.useForm();
     const [loading, setLoading] = useState(false);
+    const [unitKerja, setUnitKerja] = useState(null);
+
 
     const selectedFormat = useWatch("format", form);
 
@@ -20,11 +22,12 @@ const ExportBeritaModal = ({ visible, onClose, }) => {
     const handleSubmit = async (values) => {
         setLoading(true);
         try {
+            const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
             const response = await fetch('/berita/export', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                    'X-CSRF-TOKEN': csrfToken,
                 },
                 body: JSON.stringify({
                     unit_kerja: values.unit_kerja || null,
@@ -64,7 +67,7 @@ const ExportBeritaModal = ({ visible, onClose, }) => {
     return (
         <Modal
             title="Ekspor Berita"
-            visible={visible}
+            open={visible}
             onCancel={onClose}
             footer={[
                 <Button key="cancel" onClick={onClose}>
@@ -121,11 +124,23 @@ const ExportBeritaModal = ({ visible, onClose, }) => {
                     label="Unit Kerja"
                     rules={[{ required: false }]}
                     >
-                        <Select placeholder="Pilih Unit Kerja" size="large">
-                            <Option value="Fakultas">Fakultas</Option>
-                            <Option value="UPT">UPT</Option>
-                            <Option value="PUSDI">PUSDI</Option>
-                        </Select>
+                        <Select 
+                                showSearch
+                                optionFilterProp="children"
+                                placeholder="Pilih Unit Kerja" 
+                                size="large"
+                                value={unitKerja} 
+                                onChange={(value) => setUnitKerja(value)}
+                                filterOption={(input, option) =>
+                                    (option?.children ?? "").toLowerCase().includes(input.toLowerCase())
+                                }
+                            >
+                                {(unit_kerja_list || []).map((unit) => (
+                                    <Option key={unit.id} value={unit.id}>
+                                        {unit.name}
+                                    </Option>
+                                ))}
+                            </Select>
                 </Form.Item>
                 
                 <Row gutter={16}>

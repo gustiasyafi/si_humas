@@ -5,6 +5,7 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\AgendaController;
 use App\Http\Controllers\BeritaController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\UnitKerjaController;
 use App\Http\Controllers\BeritaExport;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
@@ -34,6 +35,19 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
+Route::get('/master-data', [UnitKerjaController::class, 'index'])
+    ->middleware(['auth', 'verified'])->name('master-data.index');
+Route::post('/master-data/store', [UnitKerjaController::class, 'store'])
+    ->middleware(['auth', 'verified'])->name('master-data.store');
+Route::get('/master-data/edit/{unitKerja}', [UnitKerjaController::class, 'edit'])
+    ->middleware(['auth', 'verified'])->name('master-data.edit');
+Route::put('/master-data/update/{unitKerja}', [UnitKerjaController::class, 'update'])
+    ->middleware(['auth', 'verified'])->name('master-data.update');
+Route::delete('/master-data/delete/{unitKerja}', [UnitKerjaController::class, 'destroy'])
+    ->middleware(['auth', 'verified'])->name('master-data.destroy');
+Route::put('/unit-kerja/{unitKerjaId}/update', [UnitKerjaController::class, 'updateUnitKerja'])
+    ->middleware(['auth', 'verified'])->name('users.updateUnitKerja');
+
 Route::get('/agenda', [AgendaController::class, 'index'])
     ->middleware(['auth', 'verified'])->name('agenda');
 
@@ -46,8 +60,6 @@ Route::get('/agenda/detail/{agenda}', [AgendaController::class, 'show'])
 
 Route::post('/agenda/store', [AgendaController::class, 'store'])
     ->middleware(['auth', 'verified'])->name('agenda.store');
-Route::put('/agenda/cancel/{agenda}', [AgendaController::class, 'cancel'])
-    ->middleware(['auth', 'verified'])->name('agenda.cancel');
 
 Route::get('/agenda/edit/{agenda}', [AgendaController::class, 'edit'])
     ->middleware(['auth', 'verified'])->name('agenda.edit');

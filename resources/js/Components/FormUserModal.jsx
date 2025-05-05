@@ -13,7 +13,7 @@ import { router } from "@inertiajs/react";
 
 const { Option } = Select;
 
-const FormUserModal = ({ visible, onClose, menu, data }) => {
+const FormUserModal = ({ visible, onClose, menu, data, unit_kerja_list = []}) => {
     const [form] = Form.useForm();
     useEffect(() => {
         if (visible) {
@@ -21,9 +21,10 @@ const FormUserModal = ({ visible, onClose, menu, data }) => {
                 form.setFieldsValue({
                     name: data.name,
                     email: data.email,
-                    unit_kerja: data.unit_kerja,
+                    unit_kerja_id: data.unit_kerja_id,
                     role: data.role,
                 });
+                setUnitKerja(data.unit_kerja_id);
             } else if (menu === "reset-password" && data){
                 form.resetFields();
             } else {
@@ -32,6 +33,7 @@ const FormUserModal = ({ visible, onClose, menu, data }) => {
         }
     }, [visible, menu, data, form]);
     
+    const [unitKerja, setUnitKerja] = useState(null);
     const [loading, setLoading] = useState(false);
 
     const handleSubmit = async (values) => {
@@ -133,7 +135,7 @@ const FormUserModal = ({ visible, onClose, menu, data }) => {
                         </Form.Item>
                         <Form.Item
                             label="Unit Kerja"
-                            name={"unit_kerja"}
+                            name="unit_kerja_id"
                             rules={[
                                 {
                                     required: true,
@@ -141,7 +143,23 @@ const FormUserModal = ({ visible, onClose, menu, data }) => {
                                 },
                             ]}
                         >
-                            <Input placeholder="Masukkan Unit Kerja" size="large" />
+                            <Select 
+                                showSearch
+                                optionFilterProp="children"
+                                placeholder="Pilih Unit Kerja" 
+                                size="large"
+                                value={unitKerja} 
+                                onChange={(value) => setUnitKerja(value)}
+                                filterOption={(input, option) =>
+                                    (option?.children ?? "").toLowerCase().includes(input.toLowerCase())
+                                }
+                            >
+                                {(unit_kerja_list || []).map((unit) => (
+                                    <Option key={unit.id} value={unit.id}>
+                                        {unit.name}
+                                    </Option>
+                                ))}
+                            </Select>
                         </Form.Item>
                         <Form.Item
                             label="Role"
