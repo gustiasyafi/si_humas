@@ -40,10 +40,13 @@ class BeritaExport implements FromQuery, WithHeadings, WithMapping
     public function map($berita): array
     {
         $this->rowNumber++;
+        $description = $berita->description;
+        $description = str_replace(['<br>', '<br/>', '<br />', '</p><p>'], "\n", $description);
+        $description = strip_tags($description);
         return [
             $this->rowNumber,
             $berita->title,
-            $berita->description,
+            $description,
             $berita->date,
             $berita->category,
             $berita->link,

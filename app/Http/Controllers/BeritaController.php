@@ -58,7 +58,7 @@ class BeritaController extends Controller
         $validated = $request->validate([
             'agenda_id' => 'sometimes|nullable|exists:agendas,id',
             'title' => 'required|string|max:255',
-            'description' => 'required|string|max:500',
+            'description' => 'required|string',
             'date' => 'required|date',
             'category' => 'required|string|max:255',
             'link' => 'nullable|string|max:255',
@@ -151,7 +151,7 @@ class BeritaController extends Controller
         $validated = $request->validate([
             'agenda_id' => 'sometimes|nullable|exists:agendas,id',
             'title' => 'required|string|max:255',
-            'description' => 'required|string|max:500',
+            'description' => 'required|string',
             'date' => 'required|date',
             'category' => 'required|string|max:255',
             'link' => 'nullable|string|max:255',

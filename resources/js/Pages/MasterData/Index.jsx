@@ -13,9 +13,7 @@ import { useState } from "react";
 import FormUnitKerjaModal from "@/Components/FormUnitKerjaModal";
 import { router } from "@inertiajs/react";
 
-
-
-export default function Index({ unit_kerja_list}) {
+export default function Index({ unit_kerja_list }) {
     const { Search } = Input;
     const [searchTerm, setSearchTerm] = useState("");
     const [selectedMenu, setSelectedMenu] = useState("user");
@@ -54,21 +52,25 @@ export default function Index({ unit_kerja_list}) {
         // Cek apakah unit kerja memiliki pengguna terkait
         if (selectedUnitKerja.users && selectedUnitKerja.users.length > 0) {
             // Update unit_kerja_id menjadi null di tabel users
-            router.put(route("users.updateUnitKerja", selectedUnitKerja.id), { unit_kerja_id: null }, {
-                onSuccess: () => {
-                    // Jika berhasil update, hapus unit kerja
-                    deleteUnitKerja();
+            router.put(
+                route("users.updateUnitKerja", selectedUnitKerja.id),
+                { unit_kerja_id: null },
+                {
+                    onSuccess: () => {
+                        // Jika berhasil update, hapus unit kerja
+                        deleteUnitKerja();
+                    },
+                    onError: () => {
+                        message.error("Gagal memperbarui pengguna");
+                    },
                 },
-                onError: () => {
-                    message.error("Gagal memperbarui pengguna");
-                },
-            });
+            );
         } else {
             // Jika tidak ada pengguna terkait, langsung hapus unit kerja
             deleteUnitKerja();
         }
     };
-    
+
     const deleteUnitKerja = () => {
         // Hapus unit kerja
         router.delete(route("master-data.destroy", selectedUnitKerja.id), {
@@ -82,15 +84,14 @@ export default function Index({ unit_kerja_list}) {
         });
     };
 
-
     const columns = [
-        {   
-            title: "Nama Unit Kerja", 
-            dataIndex: "name", 
+        {
+            title: "Nama Unit Kerja",
+            dataIndex: "name",
             key: "unit_kerja",
             sorter: (a, b) => a.name.localeCompare(b.title),
         },
-        
+
         {
             title: "Aksi",
             key: "action",
@@ -108,7 +109,7 @@ export default function Index({ unit_kerja_list}) {
                             {
                                 key: "delete",
                                 icon: <PopiconsBinLine />,
-                                label: "Hapus Berita",
+                                label: "Hapus Unit Kerja",
                                 danger: true,
                                 onClick: () => showDeleteConfirm(record),
                             },
@@ -122,14 +123,13 @@ export default function Index({ unit_kerja_list}) {
                         icon={<PopiconsEllipsisVerticalSolid />}
                     />
                 </Dropdown>
-
             ),
         },
     ];
 
     return (
         <DashboardLayout>
-            <Head title="Berita" />
+            <Head title="Unit Kerja" />
 
             <div>
                 <div className="">
@@ -165,7 +165,7 @@ export default function Index({ unit_kerja_list}) {
                             </div>
                         </div>
                         <div className="px-6 mb-4">
-                            <DataTable 
+                            <DataTable
                                 dataSource={unit_kerja_list.filter((item) =>
                                     item.name
                                         .toLowerCase()
@@ -177,14 +177,13 @@ export default function Index({ unit_kerja_list}) {
                                     current: currentPage,
                                 }}
                                 onChange={handleTableChange}
-                                
                             />
                         </div>
                     </div>
                 </div>
             </div>
             <Modal
-                title="Konfirmasi Hapus Berita"
+                title="Konfirmasi Hapus Unit Kerja"
                 open={isDeleteModalOpen}
                 onOk={handleDelete}
                 onCancel={() => setIsDeleteModalOpen(false)}
@@ -193,21 +192,22 @@ export default function Index({ unit_kerja_list}) {
                 okButtonProps={{ danger: true }}
             >
                 <p>
-                    Apakah Anda yakin ingin menghapus berita{" "}
+                    Apakah Anda yakin ingin menghapus unit kerja{" "}
                     <strong>{selectedUnitKerja?.name}</strong>?
                 </p>
                 <p className="text-gray-500 mt-2">
                     Tindakan ini tidak dapat dibatalkan.
                 </p>
             </Modal>
-            {showFormModal && (selectedMenu === "create" || selectedMenu === "edit") && (
-                <FormUnitKerjaModal
-                    visible={showFormModal}
-                    onClose={() => setShowFormModal(false)}
-                    menu={selectedMenu}
-                    data={selectedUnitKerja}
-                />
-            )}
+            {showFormModal &&
+                (selectedMenu === "create" || selectedMenu === "edit") && (
+                    <FormUnitKerjaModal
+                        visible={showFormModal}
+                        onClose={() => setShowFormModal(false)}
+                        menu={selectedMenu}
+                        data={selectedUnitKerja}
+                    />
+                )}
         </DashboardLayout>
     );
 }

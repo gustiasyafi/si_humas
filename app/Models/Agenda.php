@@ -24,7 +24,6 @@ class Agenda extends Model
         'category',
         'organizer',
         'pic',
-        'publish',
         'status_agenda',
         'notes',
         'status'

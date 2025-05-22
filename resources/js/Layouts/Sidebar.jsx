@@ -1,10 +1,5 @@
 import { Link, usePage } from "@inertiajs/react";
-import {
-    PopiconsClipboardTextLine,
-    PopiconsFolderOpenLine,
-    PopiconsHomeMinimalLine,
-    PopiconsUsersLine,
-} from "@popicons/react";
+import { PopiconsClipboardTextDuotone, PopiconsUsersDuotone, PopiconsHomeMinimalDuotone, PopiconsFolderOpenDuotone } from "@popicons/react";
 import { Layout, Menu } from "antd";
 import { useState, useEffect } from "react";
 
@@ -26,24 +21,24 @@ export default function Sidebar({ collapsed, setCollapsed }) {
     const { url, props } = usePage();
     const userRole = props.auth.user?.role;
     const [selectedKeys, setSelectedKeys] = useState([]);
-    const [openKeys, setOpenKeys] = useState(["konten"]);
+    const [openKeys, setOpenKeys] = useState(["beranda"]);
 
     const allMenuItems = [
         {
             key: "beranda",
-            icon: <PopiconsHomeMinimalLine />,
+            icon: <PopiconsHomeMinimalDuotone />,
             label: <Link href="/dashboard">Beranda</Link>,
             allowedRoles: ["superadmin", "admin", "user"],
         },
         {
             key: "master-data",
-            icon: <PopiconsClipboardTextLine />,
+            icon: <PopiconsClipboardTextDuotone />,
             label: <Link href="/master-data">Master Data</Link>,
             allowedRoles: ["superadmin"],
         },
         {
             key: "konten",
-            icon: <PopiconsFolderOpenLine />,
+            icon: <PopiconsFolderOpenDuotone />,
             label: "Konten",
             allowedRoles: ["superadmin", "admin", "user"],
             children: [
@@ -61,7 +56,7 @@ export default function Sidebar({ collapsed, setCollapsed }) {
         },
         {
             key: "user-management",
-            icon: <PopiconsUsersLine />,
+            icon: <PopiconsUsersDuotone />,
             label: <Link href="/user-management">User Management</Link>,
             allowedRoles: ["superadmin"],
         },
@@ -88,7 +83,7 @@ export default function Sidebar({ collapsed, setCollapsed }) {
 
     return (
         <Sider
-            className={`bg-[#2A2A75] transition-all duration-300 shadow-lg`}
+            className={`bg-[#ffff]`}
             trigger={null}
             collapsible
             collapsed={collapsed || window.innerWidth < 768}
@@ -106,11 +101,12 @@ export default function Sidebar({ collapsed, setCollapsed }) {
                 height: "100vh", // Gunakan viewport height
                 zIndex: 10, // Pastikan muncul di atas konten lain
                 overflow: "auto",
+                borderRight: "1px solid #e5e7eb", // <-- Border kanan tipis (abu Tailwind: gray-200)
             }}
         >
             <div className="py-4 px-3">
                 <h1
-                    className={`text-white py-3 font-bold text-center transition-all duration-300 ${
+                    className={`text-black py-3 font-bold text-center transition-all duration-300 ${
                         collapsed ? "text-xs" : "text-xl"
                     }`}
                 >

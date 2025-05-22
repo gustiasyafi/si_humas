@@ -16,7 +16,7 @@ export default function Show({ berita }) {
     console.log(berita);
 
     const formattedBerita = {
-        agenda: berita.agenda?.name || "Tidak ada",
+        agenda: berita.agenda?.name || "-",
         title: berita.title,
         description: berita.description,
         date: dayjs(berita.date).format("DD/MM/YYYY"),
@@ -41,12 +41,12 @@ export default function Show({ berita }) {
                     <Breadcrumbs items={breadcrumbItems} />
                 </div>
                 <h1 className="px-6 text-gray-900 font-semibold text-2xl mt-4">
-                    Detail Agenda
+                    Detail Berita
                 </h1>
                 <div className="px-6 py-4">
                     <Descriptions
                         bordered
-                        title="Detail Agenda"
+                        title="Detail Berita"
                         column={1}
                         labelStyle={{
                             width: "200px",
@@ -61,7 +61,7 @@ export default function Show({ berita }) {
                             {formattedBerita.title}
                         </Descriptions.Item>
                         <Descriptions.Item label="Isi Berita atau Press Release">
-                            {formattedBerita.description}
+                        <div dangerouslySetInnerHTML={{ __html: formattedBerita.description }} />
                         </Descriptions.Item>
                         <Descriptions.Item label="Tanggal Agenda">
                             {formattedBerita.date}

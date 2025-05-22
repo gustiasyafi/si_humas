@@ -80,9 +80,6 @@ export default function Show({ agenda }) {
                         <Descriptions.Item label="Status Agenda">
                             {formattedAgenda.status_agenda}
                         </Descriptions.Item>
-                        <Descriptions.Item label="Media Publikasi">
-                            {formattedAgenda.publish}
-                        </Descriptions.Item>
                         <Descriptions.Item label="Status">
                             {formattedAgenda.status}
                         </Descriptions.Item>

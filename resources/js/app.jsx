@@ -41,11 +41,14 @@ createInertiaApp({
                         },
                         Menu: {
                             itemHeight: 45,
-                            itemHoverColor: "#fff",
+                            itemHoverColor: "#4897FE",
                             itemSelectedColor: "#fff",
-                            subMenuItemSelectedColor: "#fff",
-                            itemBg: "#2A2A75",
-                            itemColor: "#fff",
+                            subMenuItemSelectedColor: "#4897FE",
+                            itemBg: "#fff",
+                            itemColor: "##232323",
+                        },
+                        Select: {
+                            optionSelectedColor: "#fff",
                         },
                     },
                 }}

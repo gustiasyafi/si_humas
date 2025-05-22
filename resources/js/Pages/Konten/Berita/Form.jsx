@@ -16,28 +16,9 @@ import { UploadOutlined } from "@ant-design/icons";
 import Swal from "sweetalert2";
 import { router } from "@inertiajs/react";
 import dayjs from "dayjs";
-// import ReactQuill from "react-quill";
-// import 'react-quill/dist/quill.snow.css'; // Import the styles
+import ReactQuill from "react-quill";
+import 'react-quill/dist/quill.snow.css'; // Import the styles
 
-// const props = {
-//     name: "file",
-//     multiple: true,
-//     action: "https://660d2bd96ddfa2943b33731c.mockapi.io/api/upload",
-//     onChange(info) {
-//         const { status } = info.file;
-//         if (status !== "uploading") {
-//             console.log(info.file, info.fileList);
-//         }
-//         if (status === "done") {
-//             message.success(`${info.file.name} file uploaded successfully.`);
-//         } else if (status === "error") {
-//             message.error(`${info.file.name} file upload failed.`);
-//         }
-//     },
-//     onDrop(e) {
-//         console.log("Dropped files", e.dataTransfer.files);
-//     },
-// };
 
 const PUBLISH_OPTIONS = ["Website Official", "Instagram", "Facebook", "X"];
 
@@ -72,13 +53,14 @@ export default function FormBerita({
         const values = Form.useWatch([], form);
 
         React.useEffect(() => {
-            form.validateFields({
-                validateOnly: true,
-            })
-                .then(() => setSubmittable(true))
+            const desc = form.getFieldValue("description");
+            const isDescValid = desc && desc !== "<p><br></p>";
+            
+            form.validateFields({ validateOnly: true })
+                .then(() => setSubmittable(isDescValid))
                 .catch(() => setSubmittable(false));
         }, [form, values]);
-
+        
         return (
             <Button type="primary" htmlType="submit" disabled={!submittable}>
                 {children}
@@ -331,19 +313,12 @@ export default function FormBerita({
                                 label="Isi Berita atau Press Release"
                                 rules={[{ required: true }]}
                             >
-                                <Input.TextArea
-                                    rows={4}
-                                    placeholder="Masukkan Deskripsi Agenda"
-                                    showCount
-                                    maxLength={500}
-                                    autoSize={{ minRows: 3, maxRows: 6 }}
-                                    size="large"
-                                    disabled={false}
+                                <ReactQuill 
+                                    theme="snow"
+                                    value={form.getFieldValue("description")}
+                                    onChange={(value) => form.setFieldsValue({ description: value })}
+                                    style={{ height: "200px", marginBottom: "50px" }}
                                 />
-                                {/* <ReactQuill 
-                                    value={value}
-                                    onChange={setValue}
-                                /> */}
                             </Form.Item>
                             <div style={{ display: "flex", gap: "16px" }}>
                                 <Form.Item

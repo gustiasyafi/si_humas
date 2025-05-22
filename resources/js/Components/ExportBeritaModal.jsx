@@ -2,12 +2,12 @@ import { useState, useEffect } from "react";
 import { Modal, Button, Form, Divider, Select, Row, Col, message } from "antd";
 import dayjs from "dayjs";
 import { useWatch } from "antd/es/form/Form";
+import axios from "axios";
 
 const ExportBeritaModal = ({ visible, onClose, unit_kerja_list }) => {
     const [form] = Form.useForm();
     const [loading, setLoading] = useState(false);
     const [unitKerja, setUnitKerja] = useState(null);
-
 
     const selectedFormat = useWatch("format", form);
 
@@ -22,42 +22,35 @@ const ExportBeritaModal = ({ visible, onClose, unit_kerja_list }) => {
     const handleSubmit = async (values) => {
         setLoading(true);
         try {
-            const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
-            const response = await fetch('/berita/export', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': csrfToken,
-                },
-                body: JSON.stringify({
+            const response = await axios.post(
+                "/berita/export",
+                {
                     unit_kerja: values.unit_kerja || null,
                     bulan: values.bulan,
                     tahun: values.tahun,
                     format: values.format,
-                }),
-            });
-    
-            if (!response.ok) throw new Error('Gagal mengekspor data.');
-    
-            const blob = await response.blob();
+                },
+                {
+                    responseType: "blob",
+                },
+            );
+            const blob = new Blob([response.data]);
             const url = window.URL.createObjectURL(blob);
-            const a = document.createElement('a');
+            const a = document.createElement("a");
             a.href = url;
             a.download = `berita_export.${values.format}`;
             a.click();
             a.remove();
-    
-            message.success('Ekspor berhasil diunduh');
+
+            message.success("Ekspor berhasil diunduh");
             onClose();
         } catch (error) {
             message.error(error.message);
+            throw new Error("Gagal mengekspor data.")
         } finally {
             setLoading(false);
         }
     };
-    
-    
-    
 
     const options = [
         { label: "Excel", value: "xlsx" },
@@ -104,7 +97,9 @@ const ExportBeritaModal = ({ visible, onClose, unit_kerja_list }) => {
                             <button
                                 type="button"
                                 key={option.value}
-                                onClick={() => form.setFieldValue("format", option.value)}
+                                onClick={() =>
+                                    form.setFieldValue("format", option.value)
+                                }
                                 className={`px-4 py-2 rounded-md border transition-all duration-150 ${
                                     selectedFormat === option.value
                                         ? "border-blue-500 bg-blue-50 text-blue-600"
@@ -118,31 +113,33 @@ const ExportBeritaModal = ({ visible, onClose, unit_kerja_list }) => {
                         ))}
                     </div>
                 </Form.Item>
-                
+
                 <Form.Item
                     name="unit_kerja"
                     label="Unit Kerja"
                     rules={[{ required: false }]}
+                >
+                    <Select
+                        showSearch
+                        optionFilterProp="children"
+                        placeholder="Pilih Unit Kerja"
+                        size="large"
+                        value={unitKerja}
+                        onChange={(value) => setUnitKerja(value)}
+                        filterOption={(input, option) =>
+                            (option?.children ?? "")
+                                .toLowerCase()
+                                .includes(input.toLowerCase())
+                        }
                     >
-                        <Select 
-                                showSearch
-                                optionFilterProp="children"
-                                placeholder="Pilih Unit Kerja" 
-                                size="large"
-                                value={unitKerja} 
-                                onChange={(value) => setUnitKerja(value)}
-                                filterOption={(input, option) =>
-                                    (option?.children ?? "").toLowerCase().includes(input.toLowerCase())
-                                }
-                            >
-                                {(unit_kerja_list || []).map((unit) => (
-                                    <Option key={unit.id} value={unit.id}>
-                                        {unit.name}
-                                    </Option>
-                                ))}
-                            </Select>
+                        {(unit_kerja_list || []).map((unit) => (
+                            <Option key={unit.id} value={unit.id}>
+                                {unit.name}
+                            </Option>
+                        ))}
+                    </Select>
                 </Form.Item>
-                
+
                 <Row gutter={16}>
                     <Col span={12}>
                         <Form.Item
@@ -152,8 +149,18 @@ const ExportBeritaModal = ({ visible, onClose, unit_kerja_list }) => {
                         >
                             <Select placeholder="Pilih Bulan" size="large">
                                 {[
-                                    "Januari", "Februari", "Maret", "April", "Mei", "Juni",
-                                    "Juli", "Agustus", "September", "Oktober", "November", "Desember"
+                                    "Januari",
+                                    "Februari",
+                                    "Maret",
+                                    "April",
+                                    "Mei",
+                                    "Juni",
+                                    "Juli",
+                                    "Agustus",
+                                    "September",
+                                    "Oktober",
+                                    "November",
+                                    "Desember",
                                 ].map((month, index) => (
                                     <Option key={index + 1} value={index + 1}>
                                         {month}
@@ -182,8 +189,6 @@ const ExportBeritaModal = ({ visible, onClose, unit_kerja_list }) => {
                     </Col>
                 </Row>
             </Form>
-            
-            
         </Modal>
     );
 };

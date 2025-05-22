@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\Agenda;
+use Carbon\Carbon;
+use Illuminate\Http\JsonResponse;
 use Illuminate\View\View;
 use Inertia\Inertia;
 use Illuminate\Http\Request;
@@ -33,6 +35,27 @@ class AgendaController extends Controller
                 'user' => Auth::user()
             ]
         ]);
+    }
+    public function getAllAgenda(Request $request): JsonResponse
+    {
+        $date = $request->input('date'); // format: Y-m-d
+        $query = Agenda::query();
+
+        if ($date) {
+            try {
+                $parsedDate = Carbon::parse($date)->format('Y-m-d');
+                $query->whereDate('date', $parsedDate);
+            } catch (\Exception $e) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Invalid date format.',
+                ], 400);
+            }
+        }
+
+        $agendas = $query->orderBy('time', 'asc')->get();
+
+        return response()->json($agendas);
     }
     public function show(Agenda $agenda)
     {
@@ -72,7 +95,6 @@ class AgendaController extends Controller
             'category' => 'required|string|max:255',
             'organizer' => 'required|string|max:255',
             'pic' => 'required|string|max:255',
-            'publish' => 'required|string|max:255',
             'status_agenda' => 'required|string|max:255',
             'notes' => 'nullable|string|max:1000',
         ]);
@@ -86,7 +108,6 @@ class AgendaController extends Controller
             'category' => $validated['category'],
             'organizer' => $validated['organizer'],
             'pic' => $validated['pic'],
-            'publish' => $validated['publish'],
             'status_agenda' => $validated['status_agenda'],
             'notes' => $validated['notes'] ?? '',
             'status' => 'Diajukan',
@@ -95,11 +116,11 @@ class AgendaController extends Controller
     }
     public function update(Request $request, Agenda $agenda)
     {
-         /** @var \App\Models\User */
-         $user = Auth::user();
-         if ($user->hasRole('user') && Auth::user()->id !== $agenda->user_id) {
-             return redirect()->route('agenda')->with('error', 'Anda tidak memiliki akses ke agenda ini.');
-         }
+        /** @var \App\Models\User */
+        $user = Auth::user();
+        if ($user->hasRole('user') && Auth::user()->id !== $agenda->user_id) {
+            return redirect()->route('agenda')->with('error', 'Anda tidak memiliki akses ke agenda ini.');
+        }
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'description' => 'required|string|max:500',
@@ -109,7 +130,6 @@ class AgendaController extends Controller
             'category' => 'required|string|max:255',
             'organizer' => 'required|string|max:255',
             'pic' => 'required|string|max:255',
-            'publish' => 'required|string|max:255',
             'status_agenda' => 'required|string|max:255',
             'notes' => 'nullable|string|max:1000',
         ]);
@@ -124,8 +144,8 @@ class AgendaController extends Controller
             return redirect()->route('agenda')->with('error', 'Agenda not found');
         }
 
-         /** @var \App\Models\User */
-         $user = Auth::user();
+        /** @var \App\Models\User */
+        $user = Auth::user();
         if (!$user->hasRole('admin') && !$user->hasRole('superadmin')) {
             return redirect()->route('agenda')->with('error', 'Anda tidak memiliki akses untuk mengubah status.');
         }
@@ -144,13 +164,26 @@ class AgendaController extends Controller
 
     public function destroy(Agenda $agenda)
     {
-         /** @var \App\Models\User */
-         $user = Auth::user();
-         if ($user->hasRole('user') && Auth::user()->id !== $agenda->user_id) {
-             return redirect()->route('agenda')->with('error', 'Anda tidak memiliki akses ke agenda ini.');
-         }
+        /** @var \App\Models\User */
+        $user = Auth::user();
+        if ($user->hasRole('user') && Auth::user()->id !== $agenda->user_id) {
+            return redirect()->route('agenda')->with('error', 'Anda tidak memiliki akses ke agenda ini.');
+        }
         $agenda->delete();
 
         return redirect()->route('agenda')->with('success', 'Agenda berhasil dihapus.');
+    }
+    public function export(Agenda $agenda)
+    {
+        /** @var \App\Models\User */
+        $user = Auth::user();
+        if ($user->hasRole('user') && Auth::user()->id !== $agenda->user_id) {
+            return redirect()->route('agenda')->with('error', 'Anda tidak memiliki akses ke agenda ini.');
+        }
+
+        // Kembalikan data yang diperlukan untuk export
+        return Inertia::render('Konten/Agenda/Export', [
+            'agenda' => $agenda,
+        ]);
     }
 }

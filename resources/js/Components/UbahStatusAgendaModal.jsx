@@ -66,7 +66,6 @@ const UbahStatusAgendaModal = ({ visible, onClose, menu, data }) => {
                     style={{ marginBottom: 12 }} 
                 >
                     <Select placeholder="Pilih status baru" size="large">
-                        <Option value="Diproses">Diproses</Option>
                         <Option value="Dipublikasikan">Dipublikasikan</Option>
                         <Option value="Ditolak">Ditolak</Option>
                     </Select>

@@ -16,7 +16,7 @@ return new class extends Migration
             $table->foreignId('user_id')->nullable()->constrained('users');
             $table->foreignId('agenda_id')->nullable()->constrained('agendas');
             $table->string('title');
-            $table->string('description');
+            $table->longText('description');
             $table->date('date');
             $table->string('category')->index();
             $table->string('link')->nullable();

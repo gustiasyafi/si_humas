@@ -10,13 +10,11 @@ import {
     TimePicker,
     Divider,
     Select,
-    message
+    message,
 } from "antd";
 import { PopiconsPlusLine } from "@popicons/react";
 import { router } from "@inertiajs/react";
 import dayjs from "dayjs";
-
-const PUBLISH_OPTIONS = ["Website Official", "Instagram", "Facebook", "X"];
 
 export default function FormAgenda({ agenda = null, type = "create" }) {
     const isEdit = type === "edit";
@@ -107,7 +105,6 @@ export default function FormAgenda({ agenda = null, type = "create" }) {
 
     const onFinish = async (values) => {
         try {
-            const publishValue = values.publish.join(", ");
             const formData = {
                 name: values.name,
                 description: values.description,
@@ -118,18 +115,21 @@ export default function FormAgenda({ agenda = null, type = "create" }) {
                 organizer: values.organizer,
                 status_agenda: values.status_agenda,
                 pic: values.pic,
-                publish: publishValue,
                 notes: values.notes || "",
             };
-    
+
             if (type === "edit" && agenda?.id) {
                 router.put(route("agenda.update", agenda.id), formData, {
                     onSuccess: () => {
                         onClose();
+                        message.destroy();
                         message.success("Agenda berhasil diperbarui!");
                     },
                     onError: (errors) => {
-                        message.error("Gagal menyimpan. Cek kembali input kamu.");
+                        message.destroy();
+                        message.error(
+                            "Gagal menyimpan. Cek kembali input kamu.",
+                        );
                         console.log(errors);
                     },
                 });
@@ -137,10 +137,14 @@ export default function FormAgenda({ agenda = null, type = "create" }) {
                 router.post(route("agenda.store"), formData, {
                     onSuccess: () => {
                         form.resetFields();
+                        message.destroy();
                         message.success("Agenda berhasil disimpan!");
                     },
                     onError: (errors) => {
-                        message.error("Gagal menyimpan agenda. Cek kembali input kamu.");
+                        message.destroy();
+                        message.error(
+                            "Gagal menyimpan agenda. Cek kembali input kamu.",
+                        );
                         console.log(errors);
                     },
                 });
@@ -149,11 +153,9 @@ export default function FormAgenda({ agenda = null, type = "create" }) {
             message.error("Terjadi kesalahan. Silakan coba lagi.");
         }
     };
-    
 
     useEffect(() => {
         if (isEdit && agenda) {
-            const publishMediaArray = agenda.publish.split(", ") || [];
             form.setFieldsValue({
                 name: agenda.name,
                 description: agenda.description,
@@ -163,14 +165,13 @@ export default function FormAgenda({ agenda = null, type = "create" }) {
                 category: agenda.category,
                 organizer: agenda.organizer,
                 pic: agenda.pic,
-                publish: publishMediaArray || [],
                 status_agenda: agenda.status_agenda,
                 notes: agenda.notes || "",
             });
             setCategoryValue(agenda.category);
             setStatusValue(agenda.status_agenda);
         }
-    }, [agenda, form, type]);
+    }, [agenda, form, isEdit, type]);
 
     return (
         <>
@@ -371,34 +372,6 @@ export default function FormAgenda({ agenda = null, type = "create" }) {
                                     <Input
                                         placeholder="Masukkan Nama PIC Agenda"
                                         size="large"
-                                    />
-                                </Form.Item>
-
-                                <Form.Item
-                                    name="publish"
-                                    label="Media Publikasi"
-                                    style={{ width: "50%" }} // Match the width of other inputs
-                                    rules={[
-                                        {
-                                            required: true,
-                                            message:
-                                                "Silakan pilih media publikasi",
-                                        },
-                                    ]}
-                                >
-                                    <Select
-                                        size="large"
-                                        mode="multiple"
-                                        placeholder="Pilih beberapa media"
-                                        style={{
-                                            width: "100%",
-                                        }}
-                                        options={PUBLISH_OPTIONS.map(
-                                            (item) => ({
-                                                value: item,
-                                                label: item,
-                                            }),
-                                        )}
                                     />
                                 </Form.Item>
                             </div>

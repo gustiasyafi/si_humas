@@ -22,7 +22,6 @@ return new class extends Migration
             $table->string('category')->index();
             $table->string('organizer');
             $table->string('pic');
-            $table->string('publish');
             $table->string('status_agenda');
             $table->text('notes')->nullable();
             $table->string('status')->default('Diajukan');

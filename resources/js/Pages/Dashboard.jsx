@@ -1,3 +1,4 @@
+import DataTable from "@/Components/DataTable";
 import DashboardLayout from "@/Layouts/DashboardLayout";
 import { Head } from "@inertiajs/react";
 import {
@@ -16,17 +17,16 @@ import {
     Cell,
 } from "recharts";
 
-export default function Dashboard({ auth }) {
-    // Contoh data untuk grafik
-    const monthlyData = [
-        { name: "Jan", Agenda: 4000, Berita: 2400 },
-        { name: "Feb", Agenda: 3000, Berita: 1398 },
-        { name: "Mar", Agenda: 2000, Berita: 9800 },
-        { name: "Apr", Agenda: 2780, Berita: 3908 },
-        { name: "May", Agenda: 1890, Berita: 4800 },
-        { name: "Jun", Agenda: 2390, Berita: 3800 },
-    ];
-
+export default function Dashboard({
+    auth,
+    berita,
+    agenda,
+    user,
+    pending,
+    recentlyAdded,
+    monthlyStats,
+    pieChartData,
+}) {
     const categoryData = [
         { name: "Mahasiswa UNS", value: 65 },
         { name: "Kerja Sama UNS", value: 35 },
@@ -36,7 +36,9 @@ export default function Dashboard({ auth }) {
     ];
 
     const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042"];
-
+    console.log("Berita Data:", berita);
+    console.log("Agenda Data:", agenda);
+    console.log("Jumlah User:", user);
     return (
         <DashboardLayout>
             <Head title="Dashboard" />
@@ -52,7 +54,9 @@ export default function Dashboard({ auth }) {
             </div>
 
             {/* Stats Cards */}
-            <div className="grid grid-cols-1 gap-5 mt-5 sm:grid-cols-2 lg:grid-cols-4">
+            <div
+                className={`grid grid-cols-1 gap-5 mt-5 sm:grid-cols-2 ${auth.user.role === "superadmin" ? "lg:grid-cols-4" : "lg:grid-cols-3"}`}
+            >
                 {/* Card 1 */}
                 <div className="p-5 bg-white rounded-lg shadow">
                     <div className="flex items-center justify-between">
@@ -61,7 +65,7 @@ export default function Dashboard({ auth }) {
                                 Menunggu Persetujuan
                             </p>
                             <p className="text-2xl font-semibold text-gray-700">
-                                8
+                                {pending?.total}
                             </p>
                         </div>
                         <div className="p-3 bg-yellow-100 rounded-full">
@@ -81,9 +85,16 @@ export default function Dashboard({ auth }) {
                         </div>
                     </div>
                     <p className="flex items-center text-sm text-yellow-500">
-                        <span>3 berita </span>
-                        <span className="ml-1">ditambahkan hari ini</span>
+                        <span>
+                            *{pending?.agenda} agenda dan {pending?.berita}{" "}
+                            berita
+                        </span>
+                        {/* <span className="ml-1">menunggu persetujuan</span> */}
                     </p>
+                    {/* <p className="flex items-center text-sm text-yellow-500">
+                        <span>3 berita </span>
+                        <span className="ml-1">menunggu persetujuan</span>
+                    </p> */}
                 </div>
 
                 {/* Card 2 */}
@@ -94,7 +105,7 @@ export default function Dashboard({ auth }) {
                                 Berita
                             </p>
                             <p className="text-2xl font-semibold text-gray-700">
-                                45
+                                {berita?.total}
                             </p>
                         </div>
                         <div className="p-3 bg-green-100 rounded-full">
@@ -113,8 +124,10 @@ export default function Dashboard({ auth }) {
                             </svg>
                         </div>
                     </div>
-                    <p className="flex items-center text-sm text-green-500">
-                        <span>+5 </span>
+                    <p
+                        className={`flex items-center text-sm ${berita?.perubahan_mingguan.startsWith("+") ? "text-green-500" : "text-red-500"}`}
+                    >
+                        <span>{berita?.perubahan_mingguan}</span>
                         <span className="ml-1">dari minggu lalu</span>
                     </p>
                 </div>
@@ -127,7 +140,7 @@ export default function Dashboard({ auth }) {
                                 Agenda
                             </p>
                             <p className="text-2xl font-semibold text-gray-700">
-                                12
+                                {agenda?.total}
                             </p>
                         </div>
                         <div className="p-3 bg-indigo-100 rounded-full">
@@ -146,44 +159,50 @@ export default function Dashboard({ auth }) {
                             </svg>
                         </div>
                     </div>
-                    <p className="flex items-center text-sm text-green-500">
-                        <span>+3 </span>
+                    <p
+                        className={`flex items-center text-sm ${agenda?.perubahan_mingguan.startsWith("+") ? "text-green-500" : "text-red-500"}`}
+                    >
+                        <span>{agenda?.perubahan_mingguan}</span>
                         <span className="ml-1">dari minggu lalu</span>
                     </p>
                 </div>
 
                 {/* Card 4 */}
-                <div className="p-5 bg-white rounded-lg shadow">
-                    <div className="flex items-center justify-between">
-                        <div>
-                            <p className="text-sm font-medium text-gray-500">
-                                Pengguna
-                            </p>
-                            <p className="text-2xl font-semibold text-gray-700">
-                                8
-                            </p>
+                {auth.user.role === "superadmin" && (
+                    <div className="p-5 bg-white rounded-lg shadow">
+                        <div className="flex items-center justify-between">
+                            <div>
+                                <p className="text-sm font-medium text-gray-500">
+                                    Pengguna
+                                </p>
+                                <p className="text-2xl font-semibold text-gray-700">
+                                    {user?.total}
+                                </p>
+                            </div>
+                            <div className="p-3 bg-red-100 rounded-full">
+                                <svg
+                                    className="w-6 h-6 text-red-600"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    viewBox="0 0 24 24"
+                                >
+                                    <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        strokeWidth="2"
+                                        d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
+                                    ></path>
+                                </svg>
+                            </div>
                         </div>
-                        <div className="p-3 bg-red-100 rounded-full">
-                            <svg
-                                className="w-6 h-6 text-red-600"
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24"
-                            >
-                                <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    strokeWidth="2"
-                                    d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
-                                ></path>
-                            </svg>
-                        </div>
+                        <p
+                            className={`flex items-center text-sm ${user?.perubahan_mingguan.startsWith("+") ? "text-green-500" : "text-red-500"}`}
+                        >
+                            <span>{user?.perubahan_mingguan}</span>
+                            <span className="ml-1">dari minggu lalu</span>
+                        </p>
                     </div>
-                    <p className="flex items-center text-sm text-green-500">
-                        <span>+1 </span>
-                        <span className="ml-1">pengguna baru</span>
-                    </p>
-                </div>
+                )}
             </div>
 
             {/* Charts Section */}
@@ -195,7 +214,7 @@ export default function Dashboard({ auth }) {
                     </h2>
                     <div className="h-80">
                         <ResponsiveContainer width="100%" height="100%">
-                            <LineChart data={monthlyData}>
+                            <LineChart data={monthlyStats}>
                                 <CartesianGrid strokeDasharray="3 3" />
                                 <XAxis dataKey="name" />
                                 <YAxis />
@@ -239,7 +258,7 @@ export default function Dashboard({ auth }) {
                             <ResponsiveContainer width="100%" height="100%">
                                 <PieChart>
                                     <Pie
-                                        data={categoryData}
+                                        data={pieChartData}
                                         cx="50%"
                                         cy="50%"
                                         labelLine={false}
@@ -265,6 +284,60 @@ export default function Dashboard({ auth }) {
                                 </PieChart>
                             </ResponsiveContainer>
                         </div>
+                    </div>
+                </div>
+            </div>
+            {/* Recently Card */}
+            <div className=" mt-8">
+                <div className="p-6 bg-white rounded-lg shadow">
+                    <h2 className="mb-4 text-xl font-semibold text-gray-800">
+                        Baru Saja Ditambahkan
+                    </h2>
+                    <div className="h-80">
+                        <DataTable
+                            dataSource={recentlyAdded}
+                            columns={[
+                                {
+                                    title: "Konten",
+                                    dataIndex: "type",
+                                    key: "type",
+                                },
+                                {
+                                    title: "Judul",
+                                    dataIndex: "title",
+                                    key: "title",
+                                    sorter: (a, b) =>
+                                        a.title.localeCompare(b.title),
+                                },
+                                {
+                                    title: "Tanggal",
+                                    dataIndex: "created_at",
+                                    key: "created_at",
+                                    render: (text) => {
+                                        const date = new Date(text);
+
+                                        // Format jam dan menit
+                                        const timeFormatter =
+                                            new Intl.DateTimeFormat("id-ID", {
+                                                hour: "2-digit",
+                                                minute: "2-digit",
+                                                hour12: false, // Gunakan format 24 jam
+                                            });
+
+                                        // Format tanggal
+                                        const dateFormatter =
+                                            new Intl.DateTimeFormat("id-ID", {
+                                                day: "2-digit",
+                                                month: "2-digit",
+                                                year: "numeric",
+                                            });
+
+                                        // Gabungkan dalam format jam - tanggal
+                                        return `${timeFormatter.format(date)} - ${dateFormatter.format(date)}`;
+                                    },
+                                },
+                            ]}
+                        />
                     </div>
                 </div>
             </div>

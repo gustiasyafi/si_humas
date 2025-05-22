@@ -15,6 +15,9 @@ import {
 import { useEffect, useState } from "react";
 import UbahStatusAgendaModal from "@/Components/UbahStatusAgendaModal";
 import ExportAgendaModal from "@/Components/ExportAgendaModal";
+import dayjs from "dayjs";
+import "dayjs/locale/id"; // agar nama bulan dalam bahasa Indonesia
+
 
 export default function Agenda({
     agenda_list,
@@ -74,14 +77,16 @@ export default function Agenda({
     const handleDelete = () => {
         router.delete(route("agenda.destroy", selectedAgenda.id), {
             onSuccess: () => {
-                message.success("Berita berhasil dihapus");
+                message.success("Agenda berhasil dihapus");
                 setIsDeleteModalOpen(false);
             },
             onError: () => {
-                message.error("Gagal menghapus berita");
+                message.error("Gagal menghapus agenda");
             },
         });
     };
+    
+    dayjs.locale("id");
 
     const columns = [
         {
@@ -100,6 +105,7 @@ export default function Agenda({
             title: "Tanggal",
             dataIndex: "date",
             key: "date",
+            render: (text) => dayjs(text).format("DD MMMM YYYY"),
         },
         { title: "Waktu", dataIndex: "time", key: "time" },
         { title: "Lokasi", dataIndex: "location", key: "location" },
@@ -290,6 +296,7 @@ export default function Agenda({
                 <ExportAgendaModal
                     visible={showExportModal}
                     onClose={() => setShowExportModal(false)}
+                    // agenda={selectedAgenda}
                     menu={"agenda"}
                     data={{}} // kosong karena ini untuk tambah, bukan edit
                 />
