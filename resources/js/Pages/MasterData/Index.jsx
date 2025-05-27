@@ -35,6 +35,7 @@ export default function Index({ unit_kerja_list }) {
     const breadcrumbItems = [
         { title: "Beranda", href: "/beranda" },
         { title: "Master Data" },
+        { title: "Unit Kerja" },
     ];
 
     const handleEdit = (unitKerja) => {
@@ -73,7 +74,7 @@ export default function Index({ unit_kerja_list }) {
 
     const deleteUnitKerja = () => {
         // Hapus unit kerja
-        router.delete(route("master-data.destroy", selectedUnitKerja.id), {
+        router.delete(route("unit-kerja.destroy", selectedUnitKerja.id), {
             onSuccess: () => {
                 message.success("Unit Kerja berhasil dihapus");
                 setIsDeleteModalOpen(false);
@@ -85,6 +86,13 @@ export default function Index({ unit_kerja_list }) {
     };
 
     const columns = [
+        {
+            title: "No",
+            key: "index",
+            render: (text, record, index) =>
+                (currentPage - 1) * pageSize + index + 1,
+            width: 50,
+        },
         {
             title: "Nama Unit Kerja",
             dataIndex: "name",
@@ -138,7 +146,7 @@ export default function Index({ unit_kerja_list }) {
                             <Breadcrumbs items={breadcrumbItems} />
                         </div>
                         <h1 className="px-6  text-gray-900 font-semibold text-2xl mt-4 mb-8">
-                            Master Data
+                            Unit Kerja
                         </h1>
                         <div className="px-6 mb-6 flex justify-between items-center">
                             <div className="flex-1 mr-4">

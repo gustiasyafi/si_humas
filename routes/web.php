@@ -34,16 +34,16 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
-Route::get('/master-data', [UnitKerjaController::class, 'index'])
-    ->middleware(['auth', 'verified'])->name('master-data.index');
-Route::post('/master-data/store', [UnitKerjaController::class, 'store'])
-    ->middleware(['auth', 'verified'])->name('master-data.store');
-Route::get('/master-data/edit/{unitKerja}', [UnitKerjaController::class, 'edit'])
-    ->middleware(['auth', 'verified'])->name('master-data.edit');
-Route::put('/master-data/update/{unitKerja}', [UnitKerjaController::class, 'update'])
-    ->middleware(['auth', 'verified'])->name('master-data.update');
-Route::delete('/master-data/delete/{unitKerja}', [UnitKerjaController::class, 'destroy'])
-    ->middleware(['auth', 'verified'])->name('master-data.destroy');
+Route::get('/unit-kerja', [UnitKerjaController::class, 'index'])
+    ->middleware(['auth', 'verified'])->name('unit-kerja.index');
+Route::post('/unit-kerja/store', [UnitKerjaController::class, 'store'])
+    ->middleware(['auth', 'verified'])->name('unit-kerja.store');
+Route::get('/unit-kerja/edit/{unitKerja}', [UnitKerjaController::class, 'edit'])
+    ->middleware(['auth', 'verified'])->name('unit-kerja.edit');
+Route::put('/unit-kerja/update/{unitKerja}', [UnitKerjaController::class, 'update'])
+    ->middleware(['auth', 'verified'])->name('unit-kerja.update');
+Route::delete('/unit-kerja/delete/{unitKerja}', [UnitKerjaController::class, 'destroy'])
+    ->middleware(['auth', 'verified'])->name('unit-kerja.destroy');
 Route::put('/unit-kerja/{unitKerjaId}/update', [UnitKerjaController::class, 'updateUnitKerja'])
     ->middleware(['auth', 'verified'])->name('users.updateUnitKerja');
 

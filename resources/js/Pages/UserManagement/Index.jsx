@@ -16,21 +16,28 @@ import FormUserModal from "@/Components/FormUserModal";
 
 export default function Index({ user_list, unit_kerja_list }) {
     const { Search } = Input;
+    const [searchTerm, setSearchTerm] = useState("");
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const [selectedUser, setSelectedUser] = useState(null);
     const [selectedMenu, setSelectedMenu] = useState("user");
     const [showFormModal, setShowFormModal] = useState(false);
+    const [currentPage, setCurrentPage] = useState(1);
+    const [pageSize, setPageSize] = useState(10);
+
+    const handleTableChange = (pagination) => {
+        setCurrentPage(pagination.current);
+        setPageSize(pagination.pageSize);
+    };
 
     const onSearch = (value) => {
-        console.log("Searching for:", value);
-        // Implementasi pencarian pengguna
+        setCurrentPage(1);
+        setSearchTerm(value.toLowerCase());
     };
 
     const handleEdit = (user) => {
         setSelectedUser(user);
         setSelectedMenu("edit");
         setShowFormModal(true);
-
     };
 
     const showDeleteConfirm = (user) => {
@@ -55,9 +62,6 @@ export default function Index({ user_list, unit_kerja_list }) {
         setSelectedUser(user);
         setSelectedMenu("reset-password");
         setShowFormModal(true);
-        // Implementasi reset password
-        // console.log(userId);
-        // message.success("Link reset password telah dikirim ke email pengguna");
     };
 
     // Data breadcrumb
@@ -65,9 +69,14 @@ export default function Index({ user_list, unit_kerja_list }) {
         { title: "Beranda", href: "/dashboard" },
         { title: "User Management" },
     ];
-    console.log("User List:", user_list);
 
     const columns = [
+        {
+            title: "No",
+            key: "index",
+            render: (text, record, index) =>
+                (currentPage - 1) * pageSize + index + 1,
+        },
         {
             title: "Nama Lengkap",
             dataIndex: "name",
@@ -92,7 +101,11 @@ export default function Index({ user_list, unit_kerja_list }) {
                     <Tag color={color}>
                         {(role ?? "")
                             .split(" ")
-                            .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+                            .map(
+                                (word) =>
+                                    word.charAt(0).toUpperCase() +
+                                    word.slice(1),
+                            )
                             .join(" ")}
                     </Tag>
                 );
@@ -123,9 +136,12 @@ export default function Index({ user_list, unit_kerja_list }) {
                               : "yellow"
                     }
                 >
-                     {(status ?? "")
+                    {(status ?? "")
                         .split(" ")
-                        .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+                        .map(
+                            (word) =>
+                                word.charAt(0).toUpperCase() + word.slice(1),
+                        )
                         .join(" ")}
                 </Tag>
             ),
@@ -244,9 +260,15 @@ export default function Index({ user_list, unit_kerja_list }) {
                     </div>
 
                     <DataTable
-                        dataSource={user_list}
+                        dataSource={user_list.filter((item) =>
+                            item.name.toLowerCase().includes(searchTerm),
+                        )}
                         columns={columns}
-                        pagination={{ pageSize: 10 }}
+                        pagination={{
+                            pageSize: pageSize,
+                            current: currentPage,
+                        }}
+                        onChange={handleTableChange}
                     />
                 </div>
             </div>
@@ -268,16 +290,18 @@ export default function Index({ user_list, unit_kerja_list }) {
                     Tindakan ini tidak dapat dibatalkan.
                 </p>
             </Modal>
-            {showFormModal && (selectedMenu === "create" || selectedMenu === "edit" || selectedMenu === "reset-password") && (
-                <FormUserModal
-                    visible={showFormModal}
-                    onClose={() => setShowFormModal(false)}
-                    menu={selectedMenu}
-                    data={selectedUser} // ← kirim data user ke FormUserModal
-                    unit_kerja_list={unit_kerja_list}
-                />
-            )}           
-            
+            {showFormModal &&
+                (selectedMenu === "create" ||
+                    selectedMenu === "edit" ||
+                    selectedMenu === "reset-password") && (
+                    <FormUserModal
+                        visible={showFormModal}
+                        onClose={() => setShowFormModal(false)}
+                        menu={selectedMenu}
+                        data={selectedUser} // ← kirim data user ke FormUserModal
+                        unit_kerja_list={unit_kerja_list}
+                    />
+                )}
         </DashboardLayout>
     );
 }

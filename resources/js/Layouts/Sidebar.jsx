@@ -1,7 +1,12 @@
-import { Link, usePage } from "@inertiajs/react";
-import { PopiconsClipboardTextDuotone, PopiconsUsersDuotone, PopiconsHomeMinimalDuotone, PopiconsFolderOpenDuotone } from "@popicons/react";
+import { router, usePage } from "@inertiajs/react";
+import {
+    PopiconsClipboardTextDuotone,
+    PopiconsUsersDuotone,
+    PopiconsHomeMinimalDuotone,
+    PopiconsFolderOpenDuotone,
+} from "@popicons/react";
 import { Layout, Menu } from "antd";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 
 const { Sider } = Layout;
 
@@ -23,63 +28,83 @@ export default function Sidebar({ collapsed, setCollapsed }) {
     const [selectedKeys, setSelectedKeys] = useState([]);
     const [openKeys, setOpenKeys] = useState(["beranda"]);
 
-    const allMenuItems = [
-        {
-            key: "beranda",
-            icon: <PopiconsHomeMinimalDuotone />,
-            label: <Link href="/dashboard">Beranda</Link>,
-            allowedRoles: ["superadmin", "admin", "user"],
-        },
-        {
-            key: "master-data",
-            icon: <PopiconsClipboardTextDuotone />,
-            label: <Link href="/master-data">Master Data</Link>,
-            allowedRoles: ["superadmin"],
-        },
-        {
-            key: "konten",
-            icon: <PopiconsFolderOpenDuotone />,
-            label: "Konten",
-            allowedRoles: ["superadmin", "admin", "user"],
-            children: [
-                {
-                    key: "agenda",
-                    label: <Link href="/agenda">Agenda</Link>,
-                    allowedRoles: ["superadmin", "admin", "user"],
-                },
-                {
-                    key: "berita",
-                    label: <Link href="/berita">Berita</Link>,
-                    allowedRoles: ["superadmin", "admin", "user"],
-                },
-            ],
-        },
-        {
-            key: "user-management",
-            icon: <PopiconsUsersDuotone />,
-            label: <Link href="/user-management">User Management</Link>,
-            allowedRoles: ["superadmin"],
-        },
-    ];
+    const allMenuItems = useMemo(
+        () => [
+            {
+                key: "beranda",
+                icon: <PopiconsHomeMinimalDuotone />,
+                label: "Beranda",
+                allowedRoles: ["superadmin", "admin", "user"],
+                path: "/dashboard",
+            },
+            {
+                key: "konten",
+                icon: <PopiconsFolderOpenDuotone />,
+                label: "Konten",
+                allowedRoles: ["superadmin", "admin", "user"],
+                children: [
+                    {
+                        key: "agenda",
+                        label: "Agenda",
+                        allowedRoles: ["superadmin", "admin", "user"],
+                        path: "/agenda",
+                    },
+                    {
+                        key: "berita",
+                        label: "Berita",
+                        allowedRoles: ["superadmin", "admin", "user"],
+                        path: "/berita",
+                    },
+                ],
+            },
+            {
+                key: "unit-kerja",
+                icon: <PopiconsClipboardTextDuotone />,
+                label: "Master Data",
+                allowedRoles: ["superadmin"],
+                children: [
+                    {
+                        key: "unit-kerja",
+                        label: "Unit Kerja",
+                        allowedRoles: ["superadmin"],
+                        path: "/unit-kerja",
+                    },
+                ],
+            },
+            {
+                key: "user-management",
+                icon: <PopiconsUsersDuotone />,
+                label: "User Management",
+                allowedRoles: ["superadmin"],
+                path: "/user-management",
+            },
+        ],
+        [],
+    );
 
     const filteredMenuItems = filterMenuByRole(allMenuItems, userRole);
 
-    // Update selected keys based on current URL path
-    useEffect(() => {
-        if (url.startsWith("/dashboard")) {
-            setSelectedKeys(["beranda"]);
-        } else if (url.startsWith("/master-data")) {
-            setSelectedKeys(["master-data"]);
-        } else if (url.startsWith("/agenda")) {
-            setSelectedKeys(["agenda"]);
-            if (!collapsed) setOpenKeys(["konten"]);
-        } else if (url.startsWith("/berita")) {
-            setSelectedKeys(["berita"]);
-            if (!collapsed) setOpenKeys(["konten"]);
-        } else if (url.startsWith("/user-management")) {
-            setSelectedKeys(["user-management"]);
+    function findMenuKeyByPath(items, path) {
+        for (const item of items) {
+            if (item.path && path.startsWith(item.path)) {
+                return { selectedKey: item.key, openKey: null };
+            }
+            if (item.children) {
+                for (const child of item.children) {
+                    if (child.path && path.startsWith(child.path)) {
+                        return { selectedKey: child.key, openKey: item.key };
+                    }
+                }
+            }
         }
-    }, [url, collapsed]);
+        return { selectedKey: null, openKey: null };
+    }
+
+    useEffect(() => {
+        const { selectedKey, openKey } = findMenuKeyByPath(allMenuItems, url);
+        if (selectedKey) setSelectedKeys([selectedKey]);
+        if (openKey && !collapsed) setOpenKeys([openKey]);
+    }, [url, collapsed, allMenuItems]);
 
     return (
         <Sider
@@ -106,8 +131,8 @@ export default function Sidebar({ collapsed, setCollapsed }) {
         >
             <div className="py-4 px-3">
                 <h1
-                    className={`text-black py-3 font-bold text-center transition-all duration-300 ${
-                        collapsed ? "text-xs" : "text-xl"
+                    className={`text-[#4392F8] py-3 font-bold text-center transition-all duration-300 ${
+                        collapsed ? "text-xs" : "text-2xl"
                     }`}
                 >
                     {collapsed ? "HUMAS" : "HUMAS UNS"}
@@ -118,7 +143,14 @@ export default function Sidebar({ collapsed, setCollapsed }) {
                 selectedKeys={selectedKeys}
                 openKeys={!collapsed ? openKeys : []}
                 onOpenChange={setOpenKeys}
-                // onClick={handleMenuClick}
+                onClick={({ key }) => {
+                    const target = filteredMenuItems
+                        .flatMap((menu) => menu.children || [menu])
+                        .find((menu) => menu.key === key);
+                    if (target?.path) {
+                        router.visit(target.path);
+                    }
+                }}
                 items={filteredMenuItems}
             />
         </Sider>

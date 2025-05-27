@@ -50,6 +50,9 @@ createInertiaApp({
                         Select: {
                             optionSelectedColor: "#fff",
                         },
+                        Table: {
+                            headerBg: "#F5F5F5", // warna abu-abu muda
+                        },
                     },
                 }}
             >

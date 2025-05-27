@@ -336,6 +336,12 @@ export default function Dashboard({
                                         return `${timeFormatter.format(date)} - ${dateFormatter.format(date)}`;
                                     },
                                 },
+                                {
+                                    title: "Unit Kerja",
+                                    dataIndex: "unit_kerja",
+                                    key: "unit_kerja",
+                                    render: (unit_kerja) => unit_kerja ?? "-",
+                                },
                             ]}
                         />
                     </div>

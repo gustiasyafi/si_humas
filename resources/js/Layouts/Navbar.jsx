@@ -20,11 +20,17 @@ import {
     UserOutlined,
 } from "@ant-design/icons";
 import { router, usePage } from "@inertiajs/react";
+import FormUserModal from "@/Components/FormUserModal";
+import { useState } from "react";
 
 const { Header } = Layout;
 const { Text } = Typography;
 
 export default function Navbar({ collapsed, setCollapsed }) {
+
+    const [showFormModal, setShowFormModal] = useState(false);
+    const [selectedMenu, setSelectedMenu] = useState(null);
+    const [selectedUser, setSelectedUser] = useState(null);
     const user = usePage().props.auth.user;
     const handleEditProfile = () => {
         console.log("Edit profile clicked");
@@ -32,15 +38,15 @@ export default function Navbar({ collapsed, setCollapsed }) {
     };
 
     const handleChangePassword = () => {
-        console.log("Change password clicked");
-        // Logika change password
+        setSelectedMenu("reset-password");
+        setSelectedUser(user);
+        setShowFormModal(true);
     };
 
     const handleLogout = () => {
-        console.log("Logout clicked");
-        // Logika
         router.post("/logout");
     };
+
     return (
         <Header
             className="top-0 sticky z-50 px-3 py-9"
@@ -151,11 +157,20 @@ export default function Navbar({ collapsed, setCollapsed }) {
                                 </Text>
                                 <Text>{user?.role}</Text>
                             </div>
-                            <PopiconsChevronBottomDuotone className="size-5" />
+                            <PopiconsChevronBottomDuotone className="size-5 text-black"  />
                         </Button>
                     </Dropdown>
                 </div>
             </div>
+
+            {showFormModal && (selectedMenu === "reset-password") && (
+                <FormUserModal
+                    visible={showFormModal}
+                    onClose={() => setShowFormModal(false)}
+                    menu={selectedMenu}
+                    data={selectedUser} // ← kirim data user ke FormUserModal
+                />
+            )} 
         </Header>
     );
 }

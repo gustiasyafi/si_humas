@@ -44,7 +44,14 @@ class BeritaController extends Controller
      */
     public function create()
     {
-        $agendaList = Agenda::select('id', 'name')->get();
+        /** @var \App\Models\User */
+        $user = Auth::user();
+
+        if ($user->hasRole('user')) {
+            $agendaList = Agenda::where('user_id', $user->id)->get();
+        } else {
+            $agendaList = Agenda::all();
+        }
         return Inertia::render('Konten/Berita/Create', [
             'agendaList' => $agendaList,
         ]);

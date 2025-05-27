@@ -19,19 +19,19 @@ class DatabaseSeeder extends Seeder
 
         User::firstOrCreate([
             'email' => 'superadmin@mail.com'],
-            ['name' => 'superadmin',
+            ['name' => 'Superadmin',
             'password' => bcrypt('superadmin'),
         ]);
 
         User::firstOrCreate([
             'email' => 'admin@mail.com'],
-            ['name' => 'admin',
+            ['name' => 'Admin',
             'password' => bcrypt('admin'),
         ]);
         User::firstOrCreate([
             
             'email' => 'user@mail.com'],
-            ['name' => 'user',
+            ['name' => 'User',
             'password' => bcrypt('user'),
         ]);
         $this->call([

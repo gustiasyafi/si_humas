@@ -1,19 +1,16 @@
 import { useState, useEffect } from "react";
-import {
-    Modal,
-    Button,
-    Select,
-    Form,
-    Input,
-    Divider,
-    message
-} from "antd";
+import { Modal, Button, Select, Form, Input, Divider, message } from "antd";
 import { router } from "@inertiajs/react";
-
 
 const { Option } = Select;
 
-const FormUserModal = ({ visible, onClose, menu, data, unit_kerja_list = []}) => {
+const FormUserModal = ({
+    visible,
+    onClose,
+    menu,
+    data,
+    unit_kerja_list = [],
+}) => {
     const [form] = Form.useForm();
     useEffect(() => {
         if (visible) {
@@ -23,16 +20,17 @@ const FormUserModal = ({ visible, onClose, menu, data, unit_kerja_list = []}) =>
                     email: data.email,
                     unit_kerja_id: data.unit_kerja_id,
                     role: data.role,
+                    status: data.status,
                 });
                 setUnitKerja(data.unit_kerja_id);
-            } else if (menu === "reset-password" && data){
+            } else if (menu === "reset-password" && data) {
                 form.resetFields();
             } else {
                 form.resetFields();
             }
         }
     }, [visible, menu, data, form]);
-    
+
     const [unitKerja, setUnitKerja] = useState(null);
     const [loading, setLoading] = useState(false);
 
@@ -44,34 +42,40 @@ const FormUserModal = ({ visible, onClose, menu, data, unit_kerja_list = []}) =>
                     onSuccess: () => {
                         onClose();
                         message.success("User berhasil ditambah!");
-                        
                     },
                     onError: () => {
                         message.error("Gagal menambah user.");
                     },
                 });
             } else if (menu === "edit") {
-                console.log("Updating user data with id:", data.id); 
-                await router.put(route('user-management.update', data.id), values, {
-                    onSuccess: () => {
-                        onClose();
-                        message.success("User berhasil diupdate!");
-                        
+                console.log("Updating user data with id:", data.id);
+                await router.put(
+                    route("user-management.update", data.id),
+                    values,
+                    {
+                        onSuccess: () => {
+                            onClose();
+                            message.success("User berhasil diupdate!");
+                        },
+                        onError: () => {
+                            message.error("Gagal mengupdate user.");
+                        },
                     },
-                    onError: () => {
-                        message.error("Gagal mengupdate user.");
+                );
+            } else if (menu === "reset-password") {
+                await router.put(
+                    route("user-management.reset-password", data.id),
+                    values,
+                    {
+                        onSuccess: () => {
+                            onClose();
+                            message.success("Password berhasil direset!");
+                        },
+                        onError: () => {
+                            message.error("Gagal mereset password.");
+                        },
                     },
-                });
-            } else if (menu === "reset-password"){
-                await router.put(route('user-management.reset-password', data.id), values, {
-                    onSuccess: () => {
-                        onClose();
-                        message.success("Password berhasil direset!");
-                    },
-                    onError: () => {
-                        message.error("Gagal mereset password.");
-                    },
-                });
+                );
             }
         } catch (error) {
             message.error(error.response?.data?.message || error.message);
@@ -115,11 +119,15 @@ const FormUserModal = ({ visible, onClose, menu, data, unit_kerja_list = []}) =>
                             rules={[
                                 {
                                     required: true,
-                                    message: "Nama Pengguna tidak boleh kosong!",
+                                    message:
+                                        "Nama Pengguna tidak boleh kosong!",
                                 },
                             ]}
                         >
-                            <Input placeholder="Masukkan Nama Pengguna" size="large" />
+                            <Input
+                                placeholder="Masukkan Nama Pengguna"
+                                size="large"
+                            />
                         </Form.Item>
                         <Form.Item
                             label="Email"
@@ -131,7 +139,10 @@ const FormUserModal = ({ visible, onClose, menu, data, unit_kerja_list = []}) =>
                                 },
                             ]}
                         >
-                            <Input placeholder="Masukkan Email Pengguna" size="large" />
+                            <Input
+                                placeholder="Masukkan Email Pengguna"
+                                size="large"
+                            />
                         </Form.Item>
                         <Form.Item
                             label="Unit Kerja"
@@ -143,15 +154,17 @@ const FormUserModal = ({ visible, onClose, menu, data, unit_kerja_list = []}) =>
                                 },
                             ]}
                         >
-                            <Select 
+                            <Select
                                 showSearch
                                 optionFilterProp="children"
-                                placeholder="Pilih Unit Kerja" 
+                                placeholder="Pilih Unit Kerja"
                                 size="large"
-                                value={unitKerja} 
+                                value={unitKerja}
                                 onChange={(value) => setUnitKerja(value)}
                                 filterOption={(input, option) =>
-                                    (option?.children ?? "").toLowerCase().includes(input.toLowerCase())
+                                    (option?.children ?? "")
+                                        .toLowerCase()
+                                        .includes(input.toLowerCase())
                                 }
                             >
                                 {(unit_kerja_list || []).map((unit) => (
@@ -165,12 +178,30 @@ const FormUserModal = ({ visible, onClose, menu, data, unit_kerja_list = []}) =>
                             label="Role"
                             name={"role"}
                             rules={[
-                                { required: true, message: "Role tidak boleh kosong!" },
+                                {
+                                    required: true,
+                                    message: "Role tidak boleh kosong!",
+                                },
                             ]}
                         >
                             <Select placeholder="Pilih Role" size="large">
                                 <Option value="admin">Admin</Option>
                                 <Option value="user">User</Option>
+                            </Select>
+                        </Form.Item>
+                        <Form.Item
+                            label="Status"
+                            name={"status"}
+                            rules={[
+                                {
+                                    required: true,
+                                    message: "Status tidak boleh kosong!",
+                                },
+                            ]}
+                        >
+                            <Select placeholder="Pilih Role" size="large">
+                                <Option value="aktif">Aktif</Option>
+                                <Option value="tidak aktif">Tidak Aktif</Option>
                             </Select>
                         </Form.Item>
                     </>
@@ -179,9 +210,17 @@ const FormUserModal = ({ visible, onClose, menu, data, unit_kerja_list = []}) =>
                     <Form.Item
                         label="Password"
                         name={"password"}
-                        rules={[{ required: true, message: "Password tidak boleh kosong!" }]}
+                        rules={[
+                            {
+                                required: true,
+                                message: "Password tidak boleh kosong!",
+                            },
+                        ]}
                     >
-                        <Input.Password placeholder="Masukkan Password" size="large" />
+                        <Input.Password
+                            placeholder="Masukkan Password"
+                            size="large"
+                        />
                     </Form.Item>
                 )}
                 {menu === "reset-password" && (
@@ -190,29 +229,50 @@ const FormUserModal = ({ visible, onClose, menu, data, unit_kerja_list = []}) =>
                             label="Password Baru"
                             name={"password"}
                             rules={[
-                                { required: true, message: "Password tidak boleh kosong!" },
-                                { min: 8, message: "Password minimal 8 karakter!" },
+                                {
+                                    required: true,
+                                    message: "Password tidak boleh kosong!",
+                                },
+                                {
+                                    min: 8,
+                                    message: "Password minimal 8 karakter!",
+                                },
                             ]}
                         >
-                            <Input.Password placeholder="Masukkan Password Baru" size="large" />
+                            <Input.Password
+                                placeholder="Masukkan Password Baru"
+                                size="large"
+                            />
                         </Form.Item>
                         <Form.Item
                             label="Konfirmasi Password"
                             name={"password_confirmation"}
-                            dependencies={['password']}
+                            dependencies={["password"]}
                             rules={[
-                                { required: true, message: "Konfirmasi password tidak boleh kosong!" },
+                                {
+                                    required: true,
+                                    message:
+                                        "Konfirmasi password tidak boleh kosong!",
+                                },
                                 ({ getFieldValue }) => ({
                                     validator(_, value) {
-                                        if (!value || getFieldValue('password') === value) {
+                                        if (
+                                            !value ||
+                                            getFieldValue("password") === value
+                                        ) {
                                             return Promise.resolve();
                                         }
-                                        return Promise.reject(new Error('Password tidak cocok!'));
+                                        return Promise.reject(
+                                            new Error("Password tidak cocok!"),
+                                        );
                                     },
                                 }),
                             ]}
                         >
-                            <Input.Password placeholder="Konfirmasi Password" size="large" />
+                            <Input.Password
+                                placeholder="Konfirmasi Password"
+                                size="large"
+                            />
                         </Form.Item>
                     </>
                 )}

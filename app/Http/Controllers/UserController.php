@@ -15,7 +15,9 @@ class UserController extends Controller
      */
     public function index()
     {
-        $users = User::with(['roles', 'unitKerja'])->latest()->get()->map(function ($user) {
+        $users = User::with(['roles', 'unitKerja'])->whereDoesntHave('roles', function ($query) {
+            $query->where('name', 'superadmin');
+        })->latest()->get()->map(function ($user) {
             $user->role = $user->roles->first()?->name ?? '-';
             $user->unit_kerja = $user->unitKerja->name ?? '-';
             unset($user->roles, $user->unitKerja); // optional
@@ -60,7 +62,7 @@ class UserController extends Controller
                 'unit_kerja_id' => null,
             ]);
         }
-    
+
 
         $user = User::create([
             'name' => $validated['name'],
@@ -102,12 +104,14 @@ class UserController extends Controller
             'email' => 'required|email|unique:users,email,' . $user->id,
             'unit_kerja_id' => 'required|exists:unit_kerjas,id',
             'role' => 'required|string|max:255',
+            'status' => 'required|in:aktif,tidak aktif',
         ]);
 
         $user->name = $validated['name'];
         $user->email = $validated['email'];
         $user->unit_kerja_id = $validated['unit_kerja_id'];
         $user->role($validated['role']);
+        $user->status = $validated['status'];
 
         if (!empty($validated['password'])) {
             $user->password = Hash::make($validated['password']);
@@ -126,13 +130,13 @@ class UserController extends Controller
 
     public function resetPassword(Request $request, User $user)
     {
-        $request ->validate([
+        $request->validate([
             'password' => 'required|string|min:8|confirmed',
-            
+
         ]);
 
         // dd($request->all()); 
-        
+
         $user->password = Hash::make($request->password);
         $user->save();
 

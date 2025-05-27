@@ -46,7 +46,6 @@ export default function Show({ berita }) {
                 <div className="px-6 py-4">
                     <Descriptions
                         bordered
-                        title="Detail Berita"
                         column={1}
                         labelStyle={{
                             width: "200px",

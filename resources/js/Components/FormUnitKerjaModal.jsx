@@ -30,7 +30,7 @@ const FormUnitKerjaModal = ({ visible, onClose, menu, data }) => {
         setLoading(true);
         try {
             if (menu === "create") {
-                await router.post(route("master-data.store"), values, {
+                await router.post(route("unit-kerja.store"), values, {
                     onSuccess: () => {
                         onClose();
                         message.success("Unit Kerja berhasil ditambah!");
@@ -41,7 +41,7 @@ const FormUnitKerjaModal = ({ visible, onClose, menu, data }) => {
                 });
             } else if (menu === "edit") {
                 console.log("Updating Unit Kerja with id:", data.id);
-                await router.put(route("master-data.update", data.id), values, {
+                await router.put(route("unit-kerja.update", data.id), values, {
                     onSuccess: () => {
                         onClose();
                         message.success("Unit Kerja berhasil diupdate!");

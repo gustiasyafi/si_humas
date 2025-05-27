@@ -31,6 +31,16 @@ class AuthenticatedSessionController extends Controller
     {
         $request->authenticate();
 
+        // Cek status user
+        $user = Auth::user();
+        if ($user->status !== 'aktif') {
+            Auth::logout();
+
+            return back()->withErrors([
+                'email' => 'Akun Anda tidak aktif.',
+            ]);
+        }
+
         $request->session()->regenerate();
 
         return redirect()->intended(route('dashboard', absolute: false));

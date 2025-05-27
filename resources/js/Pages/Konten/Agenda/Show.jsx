@@ -45,7 +45,6 @@ export default function Show({ agenda }) {
                 <div className="px-6 py-4">
                     <Descriptions
                         bordered
-                        title="Detail Agenda"
                         column={1}
                         labelStyle={{
                             width: "200px",
